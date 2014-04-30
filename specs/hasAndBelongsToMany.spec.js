@@ -6,7 +6,7 @@ var mongoose = require('mongoose'),
     Post     = require('./support/postModel'),
     Category = require('./support/categoryModel');
 
-describe.only('hasManyBelongsToMany', function() {
+describe('hasManyBelongsToMany', function() {
 
   it('has hasMany on the path', function() {
     Category.schema.paths['posts'].options.habtm.should.equal('Post');
