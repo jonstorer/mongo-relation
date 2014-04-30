@@ -59,225 +59,225 @@ var tweets = 'tweets_' + random()
 
 module.exports = {
   
-  'test parent schema hasMany path': function() {
-    MemberSchema.paths['tweets'].options.hasMany.should.equal('Tweet');
-  },
+  //'test parent schema hasMany path': function() {
+    //MemberSchema.paths['tweets'].options.hasMany.should.equal('Tweet');
+  //},
   
   'test child schema belongsTo path': function() {
     TweetSchema.paths['author'].options.belongsTo.should.equal('Member');
   },
   
-  'test presence of added methods to the MongooseArray': function() {
-    var db = start()
-      , Member = db.model('Member', members)
-      , member = new Member();
+  //'test presence of added methods to the MongooseArray': function() {
+    //var db = start()
+      //, Member = db.model('Member', members)
+      //, member = new Member();
 
-    member.tweets.create.should.be.a.Function;
-    member.tweets.find.should.be.a.Function;
-    member.tweets.populate.should.be.a.Function;
-    member.tweets.remove.should.be.a.Function;
-    member.tweets.append.should.be.a.Function;
-    member.tweets.concat.should.be.a.Function;
+    //member.tweets.create.should.be.a.Function;
+    //member.tweets.find.should.be.a.Function;
+    //member.tweets.populate.should.be.a.Function;
+    //member.tweets.remove.should.be.a.Function;
+    //member.tweets.append.should.be.a.Function;
+    //member.tweets.concat.should.be.a.Function;
     
-    db.close()
-  },
+    //db.close()
+  //},
   
-  'test instantiate one child document': function(){
-    var db = start()
-      , Member = db.model('Member', members)
-      , Tweet = db.model('Tweet', tweets)
-      , member = new Member();
+  //'test instantiate one child document': function(){
+    //var db = start()
+      //, Member = db.model('Member', members)
+      //, Tweet = db.model('Tweet', tweets)
+      //, member = new Member();
     
-    var tweet = {title: "Easy relationships with mongoose-relationships"};
+    //var tweet = {title: "Easy relationships with mongoose-relationships"};
     
-    var built = member.tweets.build(tweet);
+    //var built = member.tweets.build(tweet);
     
-    built.should.be.an.instanceof(Tweet);
-    built.author.should.eql(member._id);
+    //built.should.be.an.instanceof(Tweet);
+    //built.author.should.eql(member._id);
     
-    member.tweets.should.have.length(1);
+    //member.tweets.should.have.length(1);
     
-    db.close();
-  },
+    //db.close();
+  //},
   
-  'test instantiate many children documents': function() {
-    var db = start()
-      , Member = db.model('Member', members)
-      , Tweet = db.model('Tweet', tweets)
-      , member = new Member();
+  //'test instantiate many children documents': function() {
+    //var db = start()
+      //, Member = db.model('Member', members)
+      //, Tweet = db.model('Tweet', tweets)
+      //, member = new Member();
     
-    var tweets = [{}, {}];
+    //var tweets = [{}, {}];
     
-    var built = member.tweets.build(tweets);
+    //var built = member.tweets.build(tweets);
     
-    built.forEach(function(tweet){
-      tweet.should.be.an.instanceof(Tweet);
-      tweet.author.should.eql(member._id);
-    });
+    //built.forEach(function(tweet){
+      //tweet.should.be.an.instanceof(Tweet);
+      //tweet.author.should.eql(member._id);
+    //});
     
-    member.tweets.should.have.length(2);
+    //member.tweets.should.have.length(2);
     
-    db.close();
-  },
+    //db.close();
+  //},
   
-  'test appending an instantiated child document': function() {
-    var db = start()
-      , Member = db.model('Member', members)
-      , Tweet = db.model('Tweet', tweets)
-      , member = new Member()
-      , tweet = new Tweet();
+  //'test appending an instantiated child document': function() {
+    //var db = start()
+      //, Member = db.model('Member', members)
+      //, Tweet = db.model('Tweet', tweets)
+      //, member = new Member()
+      //, tweet = new Tweet();
     
-    member.tweets.append(tweet, function(err, tweet){
-      should.strictEqual(err, null);
+    //member.tweets.append(tweet, function(err, tweet){
+      //should.strictEqual(err, null);
       
-      tweet.author.should.eql(member._id);
-      member.tweets.should.containEql(tweet._id);
+      //tweet.author.should.eql(member._id);
+      //member.tweets.should.containEql(tweet._id);
       
-      db.close();
-    });
-  },
+      //db.close();
+    //});
+  //},
   
-  'test concating many instantiated child documents': function() {
-    var db = start()
-      , Member = db.model('Member', members)
-      , Tweet = db.model('Tweet', tweets)
-      , member = new Member()
-      , tweets = [new Tweet(), new Tweet()];
+  //'test concating many instantiated child documents': function() {
+    //var db = start()
+      //, Member = db.model('Member', members)
+      //, Tweet = db.model('Tweet', tweets)
+      //, member = new Member()
+      //, tweets = [new Tweet(), new Tweet()];
     
-    member.tweets.concat(tweets, function(err, tweets){
-      should.strictEqual(err, null);
+    //member.tweets.concat(tweets, function(err, tweets){
+      //should.strictEqual(err, null);
       
-      tweets.forEach(function(tweet){
-        tweet.author.should.eql(member._id);
-        member.tweets.should.containEql(tweet._id);
-      });
+      //tweets.forEach(function(tweet){
+        //tweet.author.should.eql(member._id);
+        //member.tweets.should.containEql(tweet._id);
+      //});
       
-      db.close();
-    });
-  },
+      //db.close();
+    //});
+  //},
   
-  'test create one child document': function() {
-    var db = start()
-      , Member = db.model('Member', members)
-      , Tweet = db.model('Tweet', tweets)
-      , member = new Member();
+  //'test create one child document': function() {
+    //var db = start()
+      //, Member = db.model('Member', members)
+      //, Tweet = db.model('Tweet', tweets)
+      //, member = new Member();
     
-    var tweet = {title: "Easy relationships with mongoose-relationships"};
+    //var tweet = {title: "Easy relationships with mongoose-relationships"};
     
-    member.tweets.create(tweet, function(err, member, tweet){
-      should.strictEqual(err, null);
+    //member.tweets.create(tweet, function(err, member, tweet){
+      //should.strictEqual(err, null);
       
-      member.should.be.an.instanceof(Member);
-      member.tweets.should.have.length(1);
+      //member.should.be.an.instanceof(Member);
+      //member.tweets.should.have.length(1);
 
-      member.tweets[0].should.equal(tweet._id);
+      //member.tweets[0].should.equal(tweet._id);
       
-      tweet.should.be.an.instanceof(Tweet);
-      tweet.title.should.equal("Easy relationships with mongoose-relationships")
-      tweet.author.should.equal(member._id);
+      //tweet.should.be.an.instanceof(Tweet);
+      //tweet.title.should.equal("Easy relationships with mongoose-relationships")
+      //tweet.author.should.equal(member._id);
       
-      db.close();
-    });
-  },
+      //db.close();
+    //});
+  //},
   
-  'test create many children documents': function(){
-    var db = start()
-      , Member = db.model('Member', members)
-      , Tweet = db.model('Tweet', tweets)
-      , member = new Member();
+  //'test create many children documents': function(){
+    //var db = start()
+      //, Member = db.model('Member', members)
+      //, Tweet = db.model('Tweet', tweets)
+      //, member = new Member();
     
-    var tweets = [
-        {title: "Blog tweet #1"}
-      , {title: "Blog tweet #2"}
-    ]
+    //var tweets = [
+        //{title: "Blog tweet #1"}
+      //, {title: "Blog tweet #2"}
+    //]
     
-    member.tweets.create(tweets, function(err, member, tweets){
-      should.strictEqual(err, null);
+    //member.tweets.create(tweets, function(err, member, tweets){
+      //should.strictEqual(err, null);
       
-      member.tweets.should.have.length(2);
+      //member.tweets.should.have.length(2);
       
-      tweets.should.have.length(2);
-      tweets.forEach(function(tweet){
-        member.tweets.should.containEql(tweet._id)
-        tweet.should.be.an.instanceof(Tweet);
-        tweet.author.should.equal(member._id);
-      });
+      //tweets.should.have.length(2);
+      //tweets.forEach(function(tweet){
+        //member.tweets.should.containEql(tweet._id)
+        //tweet.should.be.an.instanceof(Tweet);
+        //tweet.author.should.equal(member._id);
+      //});
       
-      db.close();
-    });
-  },
+      //db.close();
+    //});
+  //},
   
-  'test find children documents': function(){
-    var db = start()
-      , Member = db.model('Member', members)
-      , Tweet = db.model('Tweet', tweets)
-      , member = new Member();
+  //'test find children documents': function(){
+    //var db = start()
+      //, Member = db.model('Member', members)
+      //, Tweet = db.model('Tweet', tweets)
+      //, member = new Member();
     
-    var tweets = [
-        {title: "Blog tweet #1"}
-      , {title: "Blog tweet #2"}
-    ]
+    //var tweets = [
+        //{title: "Blog tweet #1"}
+      //, {title: "Blog tweet #2"}
+    //]
     
-    member.tweets.create(tweets, function(err, member, tweets){
-      var find = member.tweets.find({}, function(err, newTweets){
-        should.strictEqual(err, null);
+    //member.tweets.create(tweets, function(err, member, tweets){
+      //var find = member.tweets.find({}, function(err, newTweets){
+        //should.strictEqual(err, null);
         
-        find.should.be.an.instanceof(mongoose.Query);
-        find._conditions.should.have.property('_id');
-        find._conditions.should.have.property('author');
-        find._conditions._id['$in'].should.be.an.instanceof(Array);
+        //find.should.be.an.instanceof(mongoose.Query);
+        //find._conditions.should.have.property('_id');
+        //find._conditions.should.have.property('author');
+        //find._conditions._id['$in'].should.be.an.instanceof(Array);
         
-        newTweets.should.have.length(2);
-        newTweets.forEach(function(tweet){
-          member.tweets.should.containEql(tweet._id)
-          tweet.should.be.an.instanceof(Tweet);
-          tweet.author.should.eql(member._id);
-        });
+        //newTweets.should.have.length(2);
+        //newTweets.forEach(function(tweet){
+          //member.tweets.should.containEql(tweet._id)
+          //tweet.should.be.an.instanceof(Tweet);
+          //tweet.author.should.eql(member._id);
+        //});
         
-        find.find({title: "Blog tweet #1"}, function(err, otherTweets){
-          find._conditions.title.should.equal("Blog tweet #1");
-          find._conditions.should.have.property('_id');
+        //find.find({title: "Blog tweet #1"}, function(err, otherTweets){
+          //find._conditions.title.should.equal("Blog tweet #1");
+          //find._conditions.should.have.property('_id');
           
-          otherTweets.should.have.length(1);
+          //otherTweets.should.have.length(1);
           
-          var tweet = otherTweets[0];
-          tweet.title.should.equal("Blog tweet #1");
+          //var tweet = otherTweets[0];
+          //tweet.title.should.equal("Blog tweet #1");
           
-          db.close();
+          //db.close();
           
-        });
-      });
-    });
-  },
+        //});
+      //});
+    //});
+  //},
   
-  'test dependent delete': function(){
-    var db = start()
-      , Member = db.model('Member', members)
-      , Tweet = db.model('Tweet', tweets)
-      , member = new Member();
+  //'test dependent delete': function(){
+    //var db = start()
+      //, Member = db.model('Member', members)
+      //, Tweet = db.model('Tweet', tweets)
+      //, member = new Member();
     
-    var tweets = [
-        {title: "Blog tweet #1"}
-      , {title: "Blog tweet #2"}
-    ]
+    //var tweets = [
+        //{title: "Blog tweet #1"}
+      //, {title: "Blog tweet #2"}
+    //]
     
-    member.tweets.create(tweets, function(err, member, tweets){
-      var tweet = tweets[0];
-      member.tweets.remove(tweet._id, function(err, member){
-        should.strictEqual(err, null);
+    //member.tweets.create(tweets, function(err, member, tweets){
+      //var tweet = tweets[0];
+      //member.tweets.remove(tweet._id, function(err, member){
+        //should.strictEqual(err, null);
         
-        member.tweets.should.not.containEql(tweet._id);
-        member.tweets.should.have.length(1);
+        //member.tweets.should.not.containEql(tweet._id);
+        //member.tweets.should.have.length(1);
         
-        // Tweet, be gone!
-        Tweet.findById(tweet._id, function(err, tweet){
-          should.strictEqual(err, null);
-          should.not.exist(tweet);
-          db.close();
-        });
-      });
-    });
-  },
+        //// Tweet, be gone!
+        //Tweet.findById(tweet._id, function(err, tweet){
+          //should.strictEqual(err, null);
+          //should.not.exist(tweet);
+          //db.close();
+        //});
+      //});
+    //});
+  //},
   
   'test dependent nullify': function(){
     var db = start()
