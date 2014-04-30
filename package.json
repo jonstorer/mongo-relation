@@ -20,8 +20,7 @@
     "url": "http://jgn.me/"
   },
   "scripts": {
-    "test": "./node_modules/.bin/expresso test/*.test.js",
-    "specs": "./node_modules/.bin/mocha -R spec specs/*.spec.js",
+    "test": "./node_modules/.bin/mocha -R spec specs/*.spec.js",
     "nyan": "./node_modules/.bin/mocha -R nyan specs/*.spec.js"
   },
   "main": "./index.js",

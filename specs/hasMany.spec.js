@@ -3,9 +3,10 @@ require('./spec_helper');
 var mongoose = require('mongoose'),
     should   = require('should'),
     User     = require('./support/userModel'),
-    Tweet    = require('./support/tweetModel');
+    Tweet    = require('./support/tweetModel'),
+    Tag      = require('./support/tagModel');
 
-describe('parent schema', function() {
+describe('hasMany', function() {
   it('has hasMany on the path', function() {
     User.schema.paths.tweets.options.hasMany.should.equal('Tweet');
   });
@@ -148,13 +149,11 @@ describe('parent schema', function() {
     });
   });
 
-  // Does not delete
-  it.skip('deletes dependents', function(done) {
+  it('deletes dependents', function(done) {
     var user   = new User(),
         tweets = [ { title: 'Blog tweet #1' },
                    { title: 'Blog tweet #2' } ];
 
-    mongoose.set('debug', true);
     user.tweets.create(tweets, function(err, user, tweets){
       var tweet = tweets[0];
       user.tweets.remove(tweet._id, function(err, user){
@@ -173,9 +172,9 @@ describe('parent schema', function() {
     });
   });
 
-  it('test dependent nullify', function(){
+  it('nullifies dependents', function(done){
     var user = new User(),
-        tags = [ { name: 'awesome' }
+        tags = [ { name: 'awesome' },
                  { name: 'omgbbq' } ];
 
     user.tags.create(tags, function(err, user, tags){
@@ -190,8 +189,42 @@ describe('parent schema', function() {
         Tag.findById(tag._id, function(err, tag){
           should.strictEqual(err, null);
           should.not.exist(tag.user);
+          done();
         });
       });
     });
-  },
+  });
+
+  it('test population of path', function(done){
+    var user   = new User(),
+        tweets = [ { title: "Blog tweet #1" },
+                   { title: "Blog tweet #2" } ];
+
+    user.tweets.create(tweets, function(err, user, tweets){
+      user.save(function(err, user){
+        User.findById(user._id).populate('tweets').exec(function(err, populatedUser){
+          should.strictEqual(err, null);
+
+          var testSugar = function(){
+            // Syntactic sugar
+            user.tweets.populate(function(err, user){
+              should.strictEqual(err, null);
+
+              var count = user.tweets.length;
+              user.tweets.forEach(function(tweet){
+                tweet.should.be.an.instanceof(Tweet);
+                --count || done();
+              });
+            });
+          };
+
+          var count = populatedUser.tweets.length;
+          populatedUser.tweets.forEach(function(tweet){
+            tweet.should.be.an.instanceof(Tweet);
+            --count || testSugar();
+          });
+        });
+      });
+    });
+  });
 });

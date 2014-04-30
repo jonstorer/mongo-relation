@@ -1,7 +1,8 @@
 var mongoose = require('mongoose');
 
 var TweetSchema = new mongoose.Schema({
-  title: String
+  title: String,
+  body:  String
 });
 
 TweetSchema.belongsTo('User', { through: 'author' });
