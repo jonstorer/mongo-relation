@@ -44,9 +44,8 @@ describe('hasOne', function() {
   });
 
   it.skip('finds the child document', function(done){
-    var user = new User();
-
-    var post = { title: 'Deep thinking, by a mongoose.'};
+    var user = new User(),
+        post = { title: 'Deep thinking, by a mongoose.'};
 
     user.post.create(post, function(err, user, post){
       var find = user.post.find(function(err, newPost){
@@ -58,6 +57,7 @@ describe('hasOne', function() {
         find.op.should.equal('findOne');
 
         user.post.should.equal(newPost._id);
+
         newPost.should.be.an.instanceof(post);
         newPost.editor.should.eql(user._id);
         done();

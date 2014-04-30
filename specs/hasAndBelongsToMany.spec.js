@@ -18,7 +18,7 @@ describe('hasManyBelongsToMany', function() {
 
   it('test presence of added methods to the MongooseArray', function() {
     var category = new Category(),
-         post    = new Post();
+        post     = new Post();
 
     category.posts.create.should.be.a.Function;
     post.categories.create.should.be.a.Function;
@@ -41,7 +41,7 @@ describe('hasManyBelongsToMany', function() {
 
   it('instantiates one child document', function(){
     var category = new Category(),
-        post = { title: "Easy relationships with mongoose-relationships" };
+        post = { title: 'Easy relationships with mongoose-relationships' };
 
     var built = category.posts.build(post);
 
@@ -53,15 +53,14 @@ describe('hasManyBelongsToMany', function() {
   });
 
   it('instantiates many children documents', function(done) {
-    var category = new Category();
-    var posts = [{}, {}];
+    var category = new Category(),
+        posts    = [{}, {}];
 
     var built = category.posts.build(posts);
 
     category.posts.should.have.length(2);
 
     var count = category.posts.length;
-
     built.forEach(function(post){
       post.should.be.an.instanceof(Post);
       post.categories.should.containEql(category._id);
@@ -86,25 +85,23 @@ describe('hasManyBelongsToMany', function() {
 
   it('concates many instantiated child documents', function(done) {
     var category = new Category(),
-        posts = [new Post(), new Post()];
+        posts    = [new Post(), new Post()];
 
     category.posts.concat(posts, function(err, posts){
       should.strictEqual(err, null);
 
-      var count =  posts.length;
-
+      var count = posts.length;
       posts.forEach(function(post){
         post.categories.should.containEql(category._id);
         category.posts.should.containEql(post._id);
-        --count || done()
+        --count || done();
       });
     });
   });
 
   it('creates one child document', function(done) {
-    var category = new Category();
-
-    var post = { title: "Easy relationships with mongoose-relationships" };
+    var category = new Category(),
+        post = { title: 'Easy relationships with mongoose-relationships' };
 
     category.posts.create(post, function(err, category, post){
       should.strictEqual(err, null);
@@ -115,7 +112,7 @@ describe('hasManyBelongsToMany', function() {
       category.posts[0].should.equal(post._id);
 
       post.should.be.an.instanceof(Post);
-      post.title.should.equal("Easy relationships with mongoose-relationships")
+      post.title.should.equal('Easy relationships with mongoose-relationships')
       post.categories.should.containEql(category._id);
 
       done();
@@ -124,8 +121,8 @@ describe('hasManyBelongsToMany', function() {
 
   it('creates many child documents', function(done){
     var category = new Category();
-        posts    = [ { title: "Blog post #1" },
-                     { title: "Blog post #2" } ]
+        posts    = [ { title: 'Blog post #1' },
+                     { title: 'Blog post #2' } ]
 
     category.posts.create(posts, function(err, category, posts){
       should.strictEqual(err, null);
@@ -135,21 +132,19 @@ describe('hasManyBelongsToMany', function() {
       posts.should.have.length(2);
 
       var count = posts.length;
-
       posts.forEach(function(post){
         category.posts.should.containEql(post._id)
         post.should.be.an.instanceof(Post);
         post.categories.should.containEql(category._id);
-
-        --count || done()
+        --count || done();
       });
     });
   });
 
   it('finds children documents', function(done){
     var category = new Category(),
-        posts    = [ { title: "Blog post #1" },
-                     { title: "Blog post #2" } ]
+        posts    = [ { title: 'Blog post #1' },
+                     { title: 'Blog post #2' } ]
 
     category.posts.create(posts, function(err, category, posts){
       var find = category.posts.find({}, function(err, newPosts){
@@ -161,25 +156,23 @@ describe('hasManyBelongsToMany', function() {
         find._conditions._id['$in'].should.be.an.instanceof(Array);
 
         var testFind = function(){
-          find.find({title: "Blog post #1"}, function(err, otherPosts){
-            find._conditions.title.should.equal("Blog post #1");
+          find.find({title: 'Blog post #1'}, function(err, otherPosts){
+            find._conditions.title.should.equal('Blog post #1');
             find._conditions.should.have.property('_id');
 
             otherPosts.should.have.length(1);
-            otherPosts[0].title.should.equal("Blog post #1");
+            otherPosts[0].title.should.equal('Blog post #1');
 
             done();
           });
         };
 
         var count = newPosts.length;
-
         newPosts.should.have.length(2);
         newPosts.forEach(function(post){
           category.posts.should.containEql(post._id)
           post.should.be.an.instanceof(Post);
           post.categories.should.containEql(category._id);
-
           --count || testFind();
         });
       });
@@ -188,8 +181,8 @@ describe('hasManyBelongsToMany', function() {
 
   it('deletes dependent', function(done){
     var category = new Category(),
-        posts    = [ { title: "Blog post #1" },
-                     { title: "Blog post #2" } ]
+        posts    = [ { title: 'Blog post #1' },
+                     { title: 'Blog post #2' } ]
 
     category.posts.create(posts, function(err, category, posts){
       var post = posts[0];
@@ -202,7 +195,6 @@ describe('hasManyBelongsToMany', function() {
 
         // Post, should still exist, this is HABTM
         Post.findById(post._id, function(err, post){
-
           should.strictEqual(err, null);
 
           should.exist(post);
@@ -237,8 +229,8 @@ describe('hasManyBelongsToMany', function() {
 
   it('populations of path', function(done){
     var category = new Category(),
-         posts = [ { title: "Blog post #1" },
-                   { title: "Blog post #2" } ];
+         posts = [ { title: 'Blog post #1' },
+                   { title: 'Blog post #2' } ];
 
     category.posts.create(posts, function(err, category, posts){
       category.save(function(err, category){
@@ -251,7 +243,6 @@ describe('hasManyBelongsToMany', function() {
               should.strictEqual(err, null);
 
               var count = category.posts.length;
-
               category.posts.forEach(function(post){
                 post.should.be.an.instanceof(Post);
                 --count || done();

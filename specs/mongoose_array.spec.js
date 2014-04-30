@@ -22,7 +22,6 @@ describe('additions to mongoose array prototype', function(){
   });
 
   it('adds a remove methods to the association', function(){
-    this.user.tweets.__remove.should.be.a.Function;
     this.user.tweets.remove.should.be.a.Function;
     this.user.tweets.delete.should.be.a.Function;
     this.user.tweets.remove.should.eql(this.user.tweets.delete);
@@ -33,7 +32,6 @@ describe('additions to mongoose array prototype', function(){
   });
 
   it('adds a concat methods to the association', function(){
-    this.user.tweets.__concat.should.be.a.Function;
     this.user.tweets.concat.should.be.a.Function;
   });
 });

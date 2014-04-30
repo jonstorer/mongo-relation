@@ -12,21 +12,21 @@ describe('hasMany', function() {
   });
 
   it('instantiates one child document', function() {
-    var user = new User({});
-    var tweet = { title: "Easy relationships with mongoose-relationships" };
+    var user  = new User({}),
+        tweet = { title: 'Easy relationships with mongoose-relationships' };
+
     var built = user.tweets.build(tweet);
 
     built.should.be.an.instanceof(Tweet);
     built.author.should.eql(user._id);
-    built.title.should.equal("Easy relationships with mongoose-relationships")
+    built.title.should.equal('Easy relationships with mongoose-relationships')
 
     user.tweets.should.have.length(1);
   });
 
   it('instantiates many children documents', function(done) {
-    var user = new User();
-
-    var tweets = [{}, {}];
+    var user   = new User(),
+        tweets = [{}, {}];
 
     var built = user.tweets.build(tweets);
 
@@ -54,11 +54,12 @@ describe('hasMany', function() {
 
   it('concates many instantiated child documents', function(done) {
     var user   = new User(),
-        tweets = [ new Tweet(), new Tweet() ],
-        count  = tweets.length;
+        tweets = [ new Tweet(), new Tweet() ];
 
     user.tweets.concat(tweets, function(err, tweets) {
       should.strictEqual(err, null);
+
+      var count = tweets.length;
       tweets.forEach(function(tweet){
         tweet.author.should.eql(user._id);
         user.tweets.should.containEql(tweet._id);
@@ -76,11 +77,10 @@ describe('hasMany', function() {
 
       user.should.be.an.instanceof(User);
       user.tweets.should.have.length(1);
-
       user.tweets[0].should.equal(tweet._id);
 
       tweet.should.be.an.instanceof(Tweet);
-      tweet.title.should.equal("Easy relationships with mongoose-relationships")
+      tweet.title.should.equal('Easy relationships with mongoose-relationships')
       tweet.author.should.equal(user._id);
       done();
     });
@@ -88,8 +88,8 @@ describe('hasMany', function() {
 
   it('creates many children documents', function(done) {
     var user = new User(),
-        tweets = [ { title: "Blog tweet #1" },
-                   { title: "Blog tweet #2" } ];
+        tweets = [ { title: 'Blog tweet #1' },
+                   { title: 'Blog tweet #2' } ];
 
     user.tweets.create(tweets, function(err, user, tweets) {
       should.strictEqual(err, null);
@@ -98,7 +98,6 @@ describe('hasMany', function() {
       tweets.should.have.length(2);
 
       var count = tweets.length;
-
       tweets.forEach(function(tweet) {
         user.tweets.should.containEql(tweet._id)
         tweet.should.be.an.instanceof(Tweet);
@@ -109,9 +108,8 @@ describe('hasMany', function() {
   });
 
   it('finds children documents', function(done) {
-    var user = new User();
-
-    var tweets = [ { title: 'Blog tweet #1' },
+    var user   = new User(),
+        tweets = [ { title: 'Blog tweet #1' },
                    { title: 'Blog tweet #2' } ]
 
     user.tweets.create(tweets, function(err, user, tweets) {
@@ -127,24 +125,22 @@ describe('hasMany', function() {
           find.find({ title: 'Blog tweet #1' }, function(err, otherTweets) {
             find._conditions.title.should.equal('Blog tweet #1');
             find._conditions.should.have.property('_id');
+
             otherTweets.should.have.length(1);
-
             otherTweets[0].title.should.equal('Blog tweet #1');
-
             done();
           });
         };
 
         newTweets.should.have.length(2);
-        var count = newTweets.length;
 
+        var count = newTweets.length;
         newTweets.forEach(function(tweet) {
           user.tweets.should.containEql(tweet._id)
           tweet.should.be.an.instanceof(Tweet);
           tweet.author.should.eql(user._id);
           --count || search();
         });
-
       });
     });
   });
@@ -197,8 +193,8 @@ describe('hasMany', function() {
 
   it('test population of path', function(done){
     var user   = new User(),
-        tweets = [ { title: "Blog tweet #1" },
-                   { title: "Blog tweet #2" } ];
+        tweets = [ { title: 'Blog tweet #1' },
+                   { title: 'Blog tweet #2' } ];
 
     user.tweets.create(tweets, function(err, user, tweets){
       user.save(function(err, user){
