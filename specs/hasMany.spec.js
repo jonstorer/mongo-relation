@@ -241,7 +241,7 @@ describe('hasMany', function() {
     });
   });
 
-  describe.only('Parent Relationship when setParent is false', function(){
+  describe('Parent Relationship when setParent is false', function(){
     describe('#create', function(){
       it('creates one child document', function(done) {
         var user         = new User(),
