@@ -9,11 +9,11 @@ var mongoose = require('mongoose'),
 describe('hasManyBelongsToMany', function() {
 
   it('has hasMany on the path', function() {
-    Category.schema.paths['posts'].options.habtm.should.equal('Post');
+    Category.schema.paths.posts.options.habtm.should.equal('Post');
   });
 
   it('test child schema habtm path', function() {
-    Post.schema.paths['categories'].options.habtm.should.equal('Category');
+    Post.schema.paths.categories.options.habtm.should.equal('Category');
   });
 
   it('does not allow setParent to be manually set', function() {
@@ -157,13 +157,15 @@ describe('hasManyBelongsToMany', function() {
                      { title: 'Blog post #2' } ]
 
     category.posts.create(posts, function(err, category, posts){
-      var find = category.posts.find({}, function(err, newPosts){
-        should.strictEqual(err, null);
+      var find = category.posts.find({})
 
-        find.should.be.an.instanceof(mongoose.Query);
-        find._conditions.should.have.property('_id');
-        find._conditions.should.have.property('categories');
-        find._conditions._id['$in'].should.be.an.instanceof(Array);
+      find.should.be.an.instanceof(mongoose.Query);
+      find._conditions.should.have.property('_id');
+      find._conditions.should.have.property('categories');
+      find._conditions._id['$in'].should.be.an.instanceof(Array);
+
+      find.exec(function(err, newPosts){
+        should.strictEqual(err, null);
 
         var testFind = function(){
           find.find({title: 'Blog post #1'}, function(err, otherPosts){
