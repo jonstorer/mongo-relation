@@ -1,5 +1,7 @@
 - TODO: in a hasMany relationship the parent should not hold child ids
 - habtm dependent cannot delete or destroy
+- change 'shouldSetChild' to 'inverseOf: nil'
+- use async library
 
 HasMany should not set the id on the parent document
 
