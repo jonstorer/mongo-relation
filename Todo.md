@@ -2,6 +2,7 @@
 - habtm dependent cannot delete or destroy
 - change 'shouldSetChild' to 'inverseOf: nil'
 - use async library
+- remove "this.schema.paths[this.pathName].options[this.type] = this.model;"
 
 HasMany should not set the id on the parent document
 
