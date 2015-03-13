@@ -11,7 +11,8 @@ var mongoose     = require('mongoose')
   , Category     = require('./support/categoryModel')
   , Pet          = require('./support/petModel')
   , Dog          = require('./support/dogModel')
-  , Fish         = require('./support/fishModel');
+  , Fish         = require('./support/fishModel')
+  , Location     = require('./support/locationModel');
 
 describe('hasMany', function() {
   describe('setup', function(){
@@ -242,6 +243,67 @@ describe('hasMany', function() {
         });
       });
     });
+  });
+
+  describe.only('polymorphic relation', function(){
+    describe('relationship', function(){
+      it('knows when a relationship is polymorphic', function(){
+        should(User.schema.paths.locations).exist;
+        should(User.schema.paths.locations.options.as).equal('locateable');
+      });
+    });
+
+    describe('#create', function(){
+      it('creates a polymorphic child', function(done) {
+        var user  = new User(),
+            local = { place: "Ed's Happy Place" };
+
+        user.locations.create(local, function(err, user, local) {
+          should.strictEqual(err, null);
+
+          user.should.be.an.instanceof(User);
+          local.should.be.an.instanceof(Location);
+          local.place.should.equal("Ed's Happy Place");
+          local.locateable.should.equal(user._id);
+          local.locateable_type.should.equal('User');
+          done();
+        });
+      });
+
+      it('creates many polymorphic children', function(done) {
+        var user      = new User(),
+            locations = [ { place: "Ed's Happy Place" },
+                          { place: "Ed's Safe Place" } ];
+
+        user.locations.create(locations, function(err, user, locations) {
+          should.strictEqual(err, null);
+
+          user.should.be.an.instanceof(User);
+          var count = locations.length;
+          locations.forEach(function(local){
+            local.should.be.an.instanceof(Location);
+            local.locateable.should.equal(user._id);
+            local.locateable_type.should.equal('User');
+            --count || done();
+          })
+        });
+      });
+    });
+
+    describe('#append', function(){
+      it('associates the child to the parent', function(done) {
+        var user  = new User(),
+            local = new Location();
+
+        user.locations.append(local, function(err, local) {
+          should.strictEqual(err, null);
+          local.locateable.should.eql(user._id);
+          local.locateable_type.should.eql('User');
+          done();
+        });
+      });
+    });
+
   });
 
   describe('Parent Relationship when setParent is false', function(){
