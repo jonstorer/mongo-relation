@@ -15,7 +15,7 @@ var mongoose     = require('mongoose')
   , Location     = require('./support/locationModel');
 
 describe('hasMany', function() {
-  describe('setup', function(){
+  describe('setup', function() {
     it('has hasMany on the path', function() {
       User.schema.paths.tweets.options.hasMany.should.equal('Tweet');
     });
@@ -31,7 +31,7 @@ describe('hasMany', function() {
 });
 
 describe('hasMany', function() {
-  describe('Child Relationship', function(){
+  describe('Child Relationship', function() {
     it('instantiates one child document', function() {
       var user  = new User({}),
           tweet = { title: 'Easy relationships with mongoose-relationships' };
@@ -64,7 +64,7 @@ describe('hasMany', function() {
 });
 
 describe('hasMany', function() {
-  describe('Parent Relationship', function(){
+  describe('Parent Relationship', function() {
     it('creates one child document', function(done) {
       var user  = new User(),
           tweet = { title: 'Easy relationships with mongoose-relationships' };
@@ -225,7 +225,7 @@ describe('hasMany', function() {
           User.findById(user._id).populate('tweets').exec(function(err, populatedUser){
             should.strictEqual(err, null);
 
-            var testSugar = function(){
+            var testSugar = function() {
               // Syntactic sugar
               user.tweets.populate(function(err, user){
                 should.strictEqual(err, null);
@@ -249,15 +249,15 @@ describe('hasMany', function() {
     });
   });
 
-  describe('polymorphic relation', function(){
-    describe('relationship', function(){
-      it('knows when a relationship is polymorphic', function(){
+  describe('polymorphic relation', function() {
+    describe('relationship', function() {
+      it('knows when a relationship is polymorphic', function() {
         should(User.schema.paths.locations).exist;
         should(User.schema.paths.locations.options.as).equal('locateable');
       });
     });
 
-    describe('#create', function(){
+    describe('#create', function() {
       it('creates a polymorphic child', function(done) {
         var user  = new User(),
             local = { place: "Ed's Happy Place" };
@@ -297,7 +297,7 @@ describe('hasMany', function() {
       });
     });
 
-    describe('#append', function(){
+    describe('#append', function() {
       it('associates the child to the parent', function(done) {
         var user  = new User(),
             local = new Location();
@@ -311,7 +311,7 @@ describe('hasMany', function() {
       });
     });
 
-    describe('#concat', function(){
+    describe('#concat', function() {
       it('concatenates many instantiated child documents', function(done) {
         var user      = new User(),
             locations = [ new Location(), new Location() ];
@@ -385,7 +385,7 @@ describe('hasMany', function() {
       });
     });
 
-    describe('#delete', function(){
+    describe('#delete', function() {
       var user, locations, local;
       beforeEach(function(done){
         user = new User();
@@ -442,7 +442,7 @@ describe('hasMany', function() {
     });
 
     // tests do not have a polymorphic relationship with nullify set
-    describe.skip('#nullifies', function(){
+    describe.skip('#nullifies', function() {
       it('nullifies dependent child documents', function(done){
         var user      = new User(),
             addresses = [ {}, {} ];
@@ -466,7 +466,7 @@ describe('hasMany', function() {
     });
 
     // has not been defined
-    describe.skip('#populate', function(){
+    describe.skip('#populate', function() {
       it('returns an error', function(done){
         var user          = new User(),
             notifications = [ {}, {} ];
@@ -484,8 +484,8 @@ describe('hasMany', function() {
     });
   });
 
-  describe('Parent Relationship when setParent is false', function(){
-    describe('#create', function(){
+  describe('Parent Relationship when setParent is false', function() {
+    describe('#create', function() {
       it('creates one child document', function(done) {
         var user         = new User(),
             notification = { message: 'Check out new relationships!' };
@@ -550,7 +550,7 @@ describe('hasMany', function() {
       });
     });
 
-    describe('#append', function(){
+    describe('#append', function() {
       it('associates the child to the parent', function(done) {
         var user         = new User(),
             notification = new Notification();
@@ -574,7 +574,7 @@ describe('hasMany', function() {
       });
     });
 
-    describe('#concat', function(){
+    describe('#concat', function() {
       it('concatenates many instantiated child documents', function(done) {
         var user          = new User(),
             notifications = [ new Notification(), new Notification() ];
@@ -673,7 +673,7 @@ describe('hasMany', function() {
       });
     });
 
-    describe('#delete', function(){
+    describe('#delete', function() {
       it('deletes dependent child documents', function(done) {
         var user          = new User(),
             notifications = [ { message: 'Blog tweet #1' },
@@ -694,7 +694,7 @@ describe('hasMany', function() {
       });
     });
 
-    describe('#nullifies', function(){
+    describe('#nullifies', function() {
       it('nullifies dependent child documents', function(done){
         var user      = new User(),
             addresses = [ {}, {} ];
@@ -717,7 +717,7 @@ describe('hasMany', function() {
       });
     });
 
-    describe('#populate', function(){
+    describe('#populate', function() {
       it('returns an error', function(done){
         var user          = new User(),
             notifications = [ {}, {} ];
@@ -736,7 +736,7 @@ describe('hasMany', function() {
   });
 });
 
-describe('with descriminators', function(){
+describe('with descriminators', function() {
   var category, dog, fish;
   beforeEach(function(done){
     dog  = new Dog({ name: 'Maddie', date_of_birth: new Date('12/24/2005'), breed: 'Border Collie Mix' });
@@ -745,8 +745,8 @@ describe('with descriminators', function(){
     category.save(done);
   });
 
-  context('associating', function(){
-    describe('#create', function(){
+  context('associating', function() {
+    describe('#create', function() {
       it('creates the superclass', function(done){
         category.pets.create({}, function(err, category, pet){
           should(pet.__t).eql.undefined;
@@ -767,7 +767,7 @@ describe('with descriminators', function(){
       });
     });
 
-    describe('#append', function(){
+    describe('#append', function() {
       it('appends an instantiated child document', function(done) {
         category.pets.append(fish, function(err, fish){
           should.strictEqual(err, null);
@@ -778,7 +778,7 @@ describe('with descriminators', function(){
       });
     });
 
-    describe('#concat', function(){
+    describe('#concat', function() {
       it('concats a hertogenious set of child documents', function(done) {
         category.pets.concat([fish, dog], function(err, pets){
           should.strictEqual(err, null);
@@ -794,14 +794,14 @@ describe('with descriminators', function(){
     });
   });
 
-  context('already associated', function(){
+  context('already associated', function() {
     beforeEach(function(done){
       category.pets.concat([fish, dog], function(err){
         category.save(done);
       });
     });
 
-    describe('#find', function(){
+    describe('#find', function() {
       it('finds pets from the parent model with the correct type', function(done) {
         category.pets.find({ _id: fish }).findOne(function(err, foundFish){
           should(foundFish._id).eql(fish._id);
@@ -816,7 +816,7 @@ describe('with descriminators', function(){
       });
     });
 
-    describe('#populate', function(){
+    describe('#populate', function() {
       it('populates pets from the parent model with the correct type', function(done) {
         category.pets.populate(function(err, category){
           should.strictEqual(err, null);
@@ -841,7 +841,7 @@ describe('with descriminators', function(){
       });
     });
 
-    describe('#delete', function(){
+    describe('#delete', function() {
       it('removes pet from the parent model', function(done) {
         category.pets.delete(fish, function(err, category){
           category.save(function(err, user){
