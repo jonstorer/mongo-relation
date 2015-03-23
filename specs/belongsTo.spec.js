@@ -1,14 +1,14 @@
 require('./spec_helper');
 
-var mongoose = require('mongoose')
-  , should   = require('should')
-  , uuid     = require('node-uuid')
-  , schema;
+var mongoose = require('mongoose'),
+    should   = require('should'),
+    uuid     = require('node-uuid'),
+    schema;
 
 describe('belongsTo', function() {
   subject = null;
 
-  before(function(){
+  before(function() {
     var partSchema = new mongoose.Schema({});
     partSchema.belongsTo('Widget');
     schema = mongoose.model('Part_' + uuid.v4(), partSchema).schema;
@@ -35,9 +35,9 @@ describe('belongsTo', function() {
     should(subject.isRequired).eql(undefined);
   });
 
-  describe('options', function(){
-    describe('custom name', function(){
-      before(function(){
+  describe('options', function() {
+    describe('custom name', function() {
+      before(function() {
         partSchema = new mongoose.Schema({});
         partSchema.belongsTo('owner', { modelName: 'Widget', required: true });
         schema = mongoose.model('Part_' + uuid.v4(), partSchema).schema;
@@ -53,8 +53,8 @@ describe('belongsTo', function() {
       });
     });
 
-    describe('required', function(){
-      before(function(){
+    describe('required', function() {
+      before(function() {
         partSchema = new mongoose.Schema({});
         partSchema.belongsTo('Widget', { required: true });
         schema = mongoose.model('Part_' + uuid.v4(), partSchema).schema;
@@ -67,14 +67,14 @@ describe('belongsTo', function() {
     });
 
     describe('polymorphic', function() {
-      before(function(){
+      before(function() {
         var partSchema = new mongoose.Schema({});
         partSchema.belongsTo('Assemblable', { polymorphic: true, required: true });
         schema = mongoose.model('Part_' + uuid.v4(), partSchema).schema;
       });
 
       describe('ObjectID half', function() {
-        before(function(){ subject = schema.paths.assemblable; });
+        before(function() { subject = schema.paths.assemblable; });
 
         it('exists', function() {
           should(subject).exist;
@@ -90,7 +90,7 @@ describe('belongsTo', function() {
       });
 
       describe('Type half', function() {
-        before(function(){ subject = schema.paths.assemblable_type; });
+        before(function() { subject = schema.paths.assemblable_type; });
 
         it('creates the type path', function() {
           should(subject).not.eql(undefined);
