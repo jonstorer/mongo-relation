@@ -346,9 +346,9 @@ describe('hasMany', function() {
       });
 
       it('finds child documents', function(done) {
-        var user      = new User()
-          , locations = [ {}, {} ]
-          , find;
+        var find,
+            user      = new User(),
+            locations = [ {}, {} ];
 
         user.locations.create(locations, function(err, user, locations) {
           user.locations.find(function(err, foundLocations) {
@@ -368,9 +368,9 @@ describe('hasMany', function() {
       });
 
       it('searching for children documents', function(done) {
-        var find
-          , user      = new User()
-          , locations = [ { place: 'Here' },
+        var find,
+            user      = new User(),
+            locations = [ { place: 'Here' },
                           { place: 'There' } ];
 
         user.locations.create(locations, function(err, user, locations) {
