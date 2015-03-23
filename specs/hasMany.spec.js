@@ -28,7 +28,9 @@ describe('hasMany', function() {
       User.schema.paths.notifications.options.setParent.should.be.false
     });
   });
+});
 
+describe('hasMany', function() {
   describe('Child Relationship', function(){
     it('instantiates one child document', function() {
       var user  = new User({}),
@@ -59,7 +61,9 @@ describe('hasMany', function() {
       });
     });
   });
+});
 
+describe('hasMany', function() {
   describe('Parent Relationship', function(){
     it('creates one child document', function(done) {
       var user  = new User(),
@@ -245,7 +249,7 @@ describe('hasMany', function() {
     });
   });
 
-  describe.only('polymorphic relation', function(){
+  describe('polymorphic relation', function(){
     describe('relationship', function(){
       it('knows when a relationship is polymorphic', function(){
         should(User.schema.paths.locations).exist;
@@ -266,7 +270,10 @@ describe('hasMany', function() {
           local.place.should.equal("Ed's Happy Place");
           local.locateable.should.equal(user._id);
           local.locateable_type.should.equal('User');
-          done();
+          User.findById(user._id, function(err, user){
+            should(user.locations).be.empty;
+            done();
+          });
         });
       });
 
@@ -304,6 +311,177 @@ describe('hasMany', function() {
       });
     });
 
+    describe('#concat', function(){
+      it('concatenates many instantiated child documents', function(done) {
+        var user      = new User(),
+            locations = [ new Location(), new Location() ];
+
+        user.locations.concat(locations, function(err, locations) {
+          should.strictEqual(err, null);
+
+          var count = locations.length;
+          locations.forEach(function(local){
+            local.locateable.should.eql(user._id);
+            local.locateable_type.should.eql('User');
+            --count || done();
+          });
+        });
+      });
+    });
+
+    describe('#find', function() {
+      it('returns a Mongoose Query', function() {
+        var user = new User();
+
+        var find = user.locations.find();
+        should(find).be.an.instanceof(mongoose.Query);
+        should(find._conditions.locateable).eql(user._id);
+        should(find._conditions.locateable_type).eql('User');
+      });
+
+      it('takes query params', function() {
+        var user = new User();
+        var find = user.locations.find({ place: 'here' });
+        should(find._conditions.place).eql('here');
+      });
+
+      it('finds child documents', function(done) {
+        var user      = new User()
+          , locations = [ {}, {} ]
+          , find;
+
+        user.locations.create(locations, function(err, user, locations) {
+          user.locations.find(function(err, foundLocations) {
+            should.strictEqual(err, null);
+
+            foundLocations.should.have.length(2);
+
+            var count = foundLocations.length;
+            foundLocations.forEach(function(local) {
+              local.should.be.an.instanceof(Location);
+              should(local.locateable).eql(user._id);
+              should(local.locateable_type).eql('User');
+              --count || done();
+            });
+          });
+        });
+      });
+
+      it('searching for children documents', function(done) {
+        var find
+          , user      = new User()
+          , locations = [ { place: 'Here' },
+                          { place: 'There' } ];
+
+        user.locations.create(locations, function(err, user, locations) {
+          find = user.locations.find({ place: 'There' });
+          find.exec(function(err, foundLocations) {
+            should.strictEqual(err, null);
+            foundLocations.should.have.length(1);
+            foundLocations[0].place.should.equal('There');
+            done();
+          });
+        });
+      });
+    });
+
+    describe('#delete', function(){
+      var user, locations, local;
+      beforeEach(function(done){
+        user = new User();
+        user.save(function(err){
+          user.locations.create([ { }, { } ], function(err, user, _locations){
+            locations = _locations;
+            local = locations[0];
+            done();
+          });
+        });
+      });
+
+      // tests do not have a polymorphic relationship with dependecy set
+      it.skip('deletes dependent child documents', function(done) {
+        user.locations.remove(local._id, function(err, user){
+          should.strictEqual(err, null);
+
+          Location.findById(local._id, function(err, found){
+            should.strictEqual(err, null);
+            should.not.exist(found);
+            done();
+          });
+        });
+      });
+
+      // tests do not have a polymorphic relationship with dependecy set
+      it.skip('allows you to pass in a whole model', function(done) {
+        var local = locations[0];
+        user.locations.remove(local, function(err, user){
+          should.strictEqual(err, null);
+
+          Location.findById(local._id, function(err, found){
+            should.strictEqual(err, null);
+            should.not.exist(found);
+            done();
+          });
+        });
+      });
+
+      it('returns an error when trying to delete a model that is not a child', function(done) {
+        var local = new Location();
+        local.save(function(err){
+          should.strictEqual(err, null);
+
+          user.locations.remove(local.id, function(err, user){
+            should.exist(err);
+            Location.findById(local._id, function(err, found){
+              should.exist(found);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    // tests do not have a polymorphic relationship with nullify set
+    describe.skip('#nullifies', function(){
+      it('nullifies dependent child documents', function(done){
+        var user      = new User(),
+            addresses = [ {}, {} ];
+
+        user.addresses.create(addresses, function(err, user, addresses){
+          var addressOne = addresses[0];
+          var addressTwo = addresses[1];
+          user.addresses.remove(addressOne._id, function(err, user){
+            should.strictEqual(err, null);
+
+            user.addresses.should.have.length(0);
+
+            Address.findById(addressOne._id, function(err, address){
+              should.strictEqual(err, null);
+              should.not.exist(address.user);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    // has not been defined
+    describe.skip('#populate', function(){
+      it('returns an error', function(done){
+        var user          = new User(),
+            notifications = [ {}, {} ];
+
+        user.notifications.create(notifications, function(err, user, notifications){
+          user.save(function(err, user){
+            user.notifications.populate(function(err, user){
+              err.should.be.an.instanceof(Error);
+              err.message.should.eql('Cannot populate when setParent is false. Use #find.')
+              done();
+            });
+          });
+        });
+      });
+    });
   });
 
   describe('Parent Relationship when setParent is false', function(){
