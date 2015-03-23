@@ -29,10 +29,12 @@
   },
   "dependencies": {
     "mongoose": ">=3.0.0",
-    "async": "^0.9.0"
+    "async": "^0.9.0",
+    "i": "^0.3.2"
   },
   "devDependencies": {
     "mocha": "latest",
-    "should": "latest"
+    "should": "latest",
+    "node-uuid": "^1.4.3"
   }
 }
