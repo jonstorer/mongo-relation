@@ -1,107 +1,94 @@
 require('./spec_helper');
 
-var mongoose     = require('mongoose')
-  , async        = require('async')
-  , should       = require('should')
-  , uuid         = require('node-uuid')
-  , User         = require('./support/userModel')
-  , Tweet        = require('./support/tweetModel');
-  //, Tag          = require('./support/tagModel')
-  //, Address      = require('./support/addressModel')
-  //, Notification = require('./support/notificationModel')
-  //, Category     = require('./support/categoryModel')
-  //, Pet          = require('./support/petModel')
-  //, Dog          = require('./support/dogModel')
-  //, Fish         = require('./support/fishModel')
-  //, Location     = require('./support/locationModel');
+var mongoose = require('mongoose')
+  , async    = require('async')
+  , should   = require('should')
+  , uuid     = require('node-uuid');
 
 
-describe.only('-hasMany', function(){
-  var schema, Model, subject;
+describe.only('hasMany without options', function(){
+  var userSchema, User, user, widgetSchema, Widget, widget;
+
+  before(function(){
+    widgetSchema = mongoose.Schema({ name: String });
+    widgetSchema.belongsTo('user');
+    Widget = mongoose.model('Widget', widgetSchema);
+
+    userSchema = new mongoose.Schema({});
+    userSchema.hasMany('widgets');
+    User = mongoose.model('User', userSchema);
+  });
 
   describe('schema', function(){
-    beforeEach(function(){
-      schema = new mongoose.Schema({});
-      schema.hasMany('Book');
-      mongoose.model('Person_' + uuid.v4(), schema);
-    });
-
     it('has a virtual to represent the relationship', function(){
-      should(schema.virtuals.books).not.equal(undefined);
-      should(schema.virtuals.books.path).equal('books');
+      should(userSchema.virtuals.widgets).not.equal(undefined);
+      should(userSchema.virtuals.widgets.path).equal('widgets');
     });
   });
 
   describe('instance', function(){
-    beforeEach(function(){
-      schema = new mongoose.Schema({});
-      schema.hasMany('Book');
-      Model = mongoose.model('Person_' + uuid.v4(), schema);
-      subject = new Model();
+    before(function(){
+      user = new User();
     });
 
     it('returns a relationship', function(){
-      should(subject.books.build).be.a.Function;
-      should(subject.books.create).be.a.Function;
-      should(subject.books.find).be.a.Function;
-      should(subject.books.findOne).be.a.Function;
-      should(subject.books.append).be.a.Function;
-      should(subject.books.concat).be.a.Function;
-      should(subject.books.remove).be.a.Function;
-      should(subject.books.delete).be.a.Function;
+      should(user.widgets.build).be.a.Function;
+      should(user.widgets.create).be.a.Function;
+      should(user.widgets.find).be.a.Function;
+      should(user.widgets.findOne).be.a.Function;
+      should(user.widgets.append).be.a.Function;
+      should(user.widgets.concat).be.a.Function;
+      should(user.widgets.remove).be.a.Function;
+      should(user.widgets.delete).be.a.Function;
     });
   });
 
   describe('build', function(){
-    var user, built;
-
-    beforeEach(function(){
-      user = new User({});
+    before(function(){
+      user = new User();
     });
 
     it('instantiates one child document', function() {
-      built = user.tweets.build({ title: 'Easy relationships with mongoose-relationships' });
+      built = user.widgets.build({ name: 'Beam' });
 
-      built.should.be.an.instanceof(Tweet);
-      built.author.should.eql(user._id);
-      built.title.should.equal('Easy relationships with mongoose-relationships')
+      should(built).be.an.instanceof(Widget);
+      should(built.user).eql(user._id);
+      should(built.name).equal('Beam')
     });
 
     it('instantiates many children documents', function() {
-      built = user.tweets.build([{}, {}]);
+      built = user.widgets.build([{}, {}]);
 
-      built.forEach(function(tweet){
-        should(tweet).be.an.instanceof(Tweet);
-        should(tweet.author).eql(user._id);
+      built.forEach(function(widget){
+        should(widget).be.an.instanceof(Widget);
+        should(widget.user).eql(user._id);
       });
     });
   });
 
   describe('create', function(){
-    var user;
-
-    beforeEach(function(){
-      user = new User({});
+    before(function(){
+      user = new User();
     });
 
     it('creates one child document', function(done) {
-      user.tweets.create({ title: 'Easy' }, function(err, tweet) {
+      user.widgets.create({ name: 'Beam' }, function(err, widget) {
         should.strictEqual(err, null);
 
-        should(tweet).be.an.instanceof(Tweet);
-        should(tweet.title).equal('Easy')
-        should(tweet.author).equal(user._id);
+        should(widget).be.an.instanceof(Widget);
+        should(widget.name).equal('Beam')
+        should(widget.user).equal(user._id);
         done();
       });
     });
 
     it('creates many child document', function(done) {
-      user.tweets.create([{}, {}], function(err, tweets) {
+      user.widgets.create([{}, {}], function(err, widgets) {
         should.strictEqual(err, null);
 
-        tweets.forEach(function(tweet){
-          should(tweet).be.an.instanceof(Tweet);
-          should(tweet.author).equal(user._id);
+        widgets.forEach(function(widget){
+          should(widget).be.an.instanceof(Widget);
+          should(widget.user).equal(user._id);
         });
 
         done();
@@ -110,51 +97,46 @@ describe.only('-hasMany', function(){
   });
 
   describe('find', function(){
-    var user, find;
+    var find;
 
-    beforeEach(function(){
-      user = new User({});
+    before(function(){
+      user = new User();
     });
 
     it('returns a criteria', function() {
-      find = user.tweets.find();
+      find = user.widgets.find();
       should(find).be.instanceOf(mongoose.Query);
       should(find.op).equal('find');
-      should(find.model.modelName).equal('Tweet');
-      should(find._conditions.author).equal(user._id);
+      should(find.model.modelName).equal('Widget');
+      should(find._conditions.user).equal(user._id);
     });
 
     it('handles query', function() {
-      find = user.tweets.find({ title: 'Win' });
+      find = user.widgets.find({ title: 'Win' });
       should(find._conditions.title).equal('Win');
     });
 
     it('handles fields', function() {
-      find = user.tweets.find({}, 'title');
-      should(find._fields.title).eql(1);
+      find = user.widgets.find({}, 'name');
+      should(find._fields.name).eql(1);
     });
 
     it('handles options', function() {
-      find = user.tweets.find({}, 'title', { skip: 6, limit: 3 });
+      find = user.widgets.find({}, null, { skip: 6, limit: 3 });
       should(find.options.skip).eql(6);
       should(find.options.limit).eql(3);
     });
 
-    describe('handling a callbacks', function(done){
-      beforeEach(function(done){
-        var tweets = [ { title: 'Simple' }, { title: 'Difficult' } ];
-
-        user.tweets.create(tweets, function(err, tweets) {
-          should.strictEqual(err, null);
-          done();
-        });
+    describe('handling callbacks', function(){
+      before(function(done){
+        user.widgets.create([{ }, { }], done);
       });
 
       it('with conditions, fields, options, callback', function(done) {
-        find = user.tweets.find({}, null, null, function(err, tweets){
-          should(tweets).have.lengthOf(2);
-          tweets.forEach(function(tweet){
-            should(tweet).be.an.instanceof(Tweet);
+        find = user.widgets.find({}, null, null, function(err, widgets){
+          should(widgets).have.lengthOf(2);
+          widgets.forEach(function(widget){
+            should(widget).be.an.instanceof(Widget);
           });
           done();
         });
@@ -163,10 +145,10 @@ describe.only('-hasMany', function(){
       });
 
       it('with conditions, fields, callback', function(done) {
-        find = user.tweets.find({}, null, function(err, tweets){
-          should(tweets).have.lengthOf(2);
-          tweets.forEach(function(tweet){
-            should(tweet).be.an.instanceof(Tweet);
+        find = user.widgets.find({}, null, function(err, widgets){
+          should(widgets).have.lengthOf(2);
+          widgets.forEach(function(widget){
+            should(widget).be.an.instanceof(Widget);
           });
           done();
         });
@@ -175,10 +157,10 @@ describe.only('-hasMany', function(){
       });
 
       it('with conditions, callback', function(done) {
-        find = user.tweets.find({}, function(err, tweets){
-          should(tweets).have.lengthOf(2);
-          tweets.forEach(function(tweet){
-            should(tweet).be.an.instanceof(Tweet);
+        find = user.widgets.find({}, function(err, widgets){
+          should(widgets).have.lengthOf(2);
+          widgets.forEach(function(widget){
+            should(widget).be.an.instanceof(Widget);
           });
           done();
         });
@@ -187,10 +169,10 @@ describe.only('-hasMany', function(){
       });
 
       it('with callback', function(done) {
-        find = user.tweets.find(function(err, tweets){
-          should(tweets).have.lengthOf(2);
-          tweets.forEach(function(tweet){
-            should(tweet).be.an.instanceof(Tweet);
+        find = user.widgets.find(function(err, widgets){
+          should(widgets).have.lengthOf(2);
+          widgets.forEach(function(widget){
+            should(widget).be.an.instanceof(Widget);
           });
           done();
         });
@@ -202,61 +184,69 @@ describe.only('-hasMany', function(){
   });
 
   describe('findOne', function(){
-    var user, find;
+    var find;
 
-    beforeEach(function(done){
-      user = new User({});
-      user.tweets.create({}, done);
+    before(function(done){
+      user = new User();
+      user.widgets.create([{ }, { }], done);
     });
 
     it('returns a findOne critera', function() {
-      find = user.tweets.findOne();
+      find = user.widgets.findOne();
       should(find).be.instanceOf(mongoose.Query);
       should(find.op).equal('findOne');
-      should(find.model.modelName).equal('Tweet');
-      should(find._conditions.author).equal(user._id);
+      should(find.model.modelName).equal('Widget');
+      should(find._conditions.user).equal(user._id);
     });
 
     it('handles the callback correctly', function(done) {
-      user.tweets.findOne(function(err, tweet){
-        should(tweet.author).eql(user._id);
+      user.widgets.findOne(function(err, widget){
+        should(widget.user).eql(user._id);
         done();
       });
     });
   });
 
   describe('append', function(){
-    var user, tweet, tweet2;
+    var other_widget;
 
-    beforeEach(function(){
-      user = new User({});
-      tweet = new Tweet({});
-      tweet2 = new Tweet({});
+    before(function(){
+      user = new User();
+      widget = new Widget();
+      otherWidget = new Widget();
+
+      should(widget.isNew).be.true;
+      should(otherWidget.isNew).be.true;
     });
 
     it('appends a single child', function(done) {
-      should(tweet.isNew).be.true;
-      user.tweets.append(tweet, function(err, appendedTweet){
-        should(tweet._id).eql(appendedTweet._id);
-        should(tweet.isNew).be.false;
-        should(appendedTweet.isNew).be.false;
+      user.widgets.append(widget, function(err, appendedWidget){
+        should(widget._id).eql(appendedWidget._id);
+        should(widget.isNew).be.false;
+        should(appendedWidget.isNew).be.false;
+
+        should(widget.user).eql(user._id);
+        should(appendedWidget.user).eql(user._id);
 
         done();
       });
     });
 
     it('appends many children', function(done) {
-      should(tweet.isNew).be.true;
-      user.tweets.append([tweet, tweet2], function(err, appendedTweets){
-        should(appendedTweets).have.lengthOf(2);
+      user.widgets.append([widget, otherWidget], function(err, appendedWidgets){
+        should(appendedWidgets).have.lengthOf(2);
 
-        should(tweet._id).eql(appendedTweets[0]._id);
-        should(tweet.isNew).be.false;
-        should(appendedTweets[0].isNew).be.false;
+        should(widget._id).eql(appendedWidgets[0]._id);
+        should(widget.user).eql(user._id);
+        should(widget.isNew).be.false;
+        should(appendedWidgets[0].user).eql(user._id);
+        should(appendedWidgets[0].isNew).be.false;
 
-        should(tweet2._id).eql(appendedTweets[1]._id);
-        should(tweet2.isNew).be.false;
-        should(appendedTweets[1].isNew).be.false;
+        should(otherWidget._id).eql(appendedWidgets[1]._id);
+        should(otherWidget.user).eql(user._id);
+        should(otherWidget.isNew).be.false;
+        should(appendedWidgets[1].user).eql(user._id);
+        should(appendedWidgets[1].isNew).be.false;
 
         done();
       });
@@ -265,9 +255,12 @@ describe.only('-hasMany', function(){
   });
 
   describe('concat', function(){
+    before(function(){
+      user = new User({});
+    });
+
     it('is sugar for append', function(){
-      var user = new User({});
-      should(user.tweets.append).eql(user.tweets.concat);
+      should(user.widgets.append).eql(user.widgets.concat);
     });
   });
 
