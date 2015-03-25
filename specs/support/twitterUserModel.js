@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 
 var twitterUserSchema = new mongoose.Schema({ name: String });
 
-twitterUserSchema.hasOne('TwitterPost', { through: 'post' });
+twitterUserSchema.hasOne('post', { modelName: 'TwitterPost' });
 
 twitterUserSchema.hasMany('categories');
 twitterUserSchema.hasMany('tags', { dependent: 'nullify' });

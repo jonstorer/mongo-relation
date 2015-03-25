@@ -4,7 +4,7 @@ var CategorySchema = new mongoose.Schema({
   title: String
 });
 
-CategorySchema.belongsTo('TwitterUser', { through: 'editor' });
+CategorySchema.belongsTo('twitter_user', { through: 'editor' });
 
 // should only delete the reference
 CategorySchema.habtm('TwitterPost', { through: 'posts', dependent: 'delete' });

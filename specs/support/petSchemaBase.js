@@ -16,7 +16,7 @@ function PetSchemaBase() {
   Schema.apply(this, arguments);
 
   this.habtm('TwitterUser', { setParent: false });
-  this.belongsTo('Category');
+  this.belongsTo('category');
 }
 util.inherits(PetSchemaBase, Schema);
 
