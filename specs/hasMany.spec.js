@@ -200,6 +200,69 @@ describe.only('-hasMany', function(){
     });
 
   });
+
+  describe('findOne', function(){
+    var user, find;
+
+    beforeEach(function(done){
+      user = new User({});
+      user.tweets.create({}, done);
+    });
+
+    it('returns a findOne critera', function() {
+      find = user.tweets.findOne();
+      should(find).be.instanceOf(mongoose.Query);
+      should(find.op).equal('findOne');
+      should(find.model.modelName).equal('Tweet');
+      should(find._conditions.author).equal(user._id);
+    });
+
+    it('handles the callback correctly', function(done) {
+      user.tweets.findOne(function(err, tweet){
+        should(tweet.author).eql(user._id);
+        done();
+      });
+    });
+  });
+
+  describe('append', function(){
+    var user, tweet, tweet2;
+
+    beforeEach(function(){
+      user = new User({});
+      tweet = new Tweet({});
+      tweet2 = new Tweet({});
+    });
+
+    it('appends a single child', function(done) {
+      should(tweet.isNew).be.true;
+      user.tweets.append(tweet, function(err, appendedTweet){
+        should(tweet._id).eql(appendedTweet._id);
+        should(tweet.isNew).be.false;
+        should(appendedTweet.isNew).be.false;
+
+        done();
+      });
+    });
+
+    it('appends many children', function(done) {
+      should(tweet.isNew).be.true;
+      user.tweets.append([tweet, tweet2], function(err, appendedTweets){
+        should(appendedTweets).have.lengthOf(2);
+
+        should(tweet._id).eql(appendedTweets[0]._id);
+        should(tweet.isNew).be.false;
+        should(appendedTweets[0].isNew).be.false;
+
+        should(tweet2._id).eql(appendedTweets[1]._id);
+        should(tweet2.isNew).be.false;
+        should(appendedTweets[1].isNew).be.false;
+
+        done();
+      });
+    });
+
+  });
 });
 
 describe('hasMany', function() {
