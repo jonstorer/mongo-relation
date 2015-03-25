@@ -4,6 +4,6 @@ var TagSchema = new mongoose.Schema({
   name: String
 });
 
-TagSchema.belongsTo('User');
+TagSchema.belongsTo('TwitterUser');
 
 module.exports = mongoose.model('Tag', TagSchema);
