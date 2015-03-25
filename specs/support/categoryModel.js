@@ -7,7 +7,7 @@ var CategorySchema = new mongoose.Schema({
 CategorySchema.belongsTo('TwitterUser', { through: 'editor' });
 
 // should only delete the reference
-CategorySchema.habtm('TwitterPost', { dependent: 'delete' });
+CategorySchema.habtm('TwitterPost', { through: 'posts', dependent: 'delete' });
 
 CategorySchema.hasMany('pets');
 
