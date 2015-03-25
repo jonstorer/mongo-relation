@@ -4,13 +4,14 @@ var mongoose = require('mongoose'),
     should   = require('should');
 
 describe('hasOne', function() {
-  var schema, model, subject;
+  var schema, model, subject, Publisher;
   before(function(){
-    var widgetSchema = new mongoose.Schema({});
-    mongoose.model('Widget', widgetSchema);
+    schema = new mongoose.Schema({})
+    schema.belongsTo('manual');
+    Publisher = mongoose.model('Publisher', schema);
 
-    var schema = new mongoose.Schema({});
-    schema.hasOne('Widget');
+    schema = new mongoose.Schema({});
+    schema.hasOne('publisher');
     model = mongoose.model('Manual', schema);
   });
 
@@ -20,15 +21,16 @@ describe('hasOne', function() {
     });
 
     it('adds a virtual to the model', function(){
-      should(subject.virtuals.widget).not.equal(undefined);
+      should(subject.virtuals.publisher).not.equal(undefined);
     });
   });
 
   context('instance', function(){
     var criteria;
+
     before(function(){
       subject = new model();
-      criteria = subject.widget();
+      criteria = subject.publisher;
     });
 
     it('returns a criteria when called with no args', function(){
@@ -44,7 +46,20 @@ describe('hasOne', function() {
     });
 
     it('looks on the correct model', function(){
-      should(criteria.model.modelName).eql('Widget');
+      should(criteria.model.modelName).eql('Publisher');
+    });
+
+    context('finding', function(){
+      before(function(done){
+        new Publisher({ manual: subject._id }).save(done);
+      });
+
+      it('finds the correct document', function(done){
+        criteria.exec(function(err, publisher){
+          should(publisher.manual).eql(subject._id);
+          done();
+        });
+      });
     });
   });
 });
