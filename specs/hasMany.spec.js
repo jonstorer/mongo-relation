@@ -207,7 +207,7 @@ describe.only('hasMany without options', function(){
     });
   });
 
-  describe('append', function(){
+  describe('concat', function(){
     var other_widget;
 
     before(function(){
@@ -219,34 +219,34 @@ describe.only('hasMany without options', function(){
       should(otherWidget.isNew).be.true;
     });
 
-    it('appends a single child', function(done) {
-      user.widgets.append(widget, function(err, appendedWidget){
-        should(widget._id).eql(appendedWidget._id);
+    it('concatenates a single child', function(done) {
+      user.widgets.concat(widget, function(err, concatenatedWidget){
+        should(widget._id).eql(concatenatedWidget._id);
         should(widget.isNew).be.false;
-        should(appendedWidget.isNew).be.false;
+        should(concatenatedWidget.isNew).be.false;
 
         should(widget.user).eql(user._id);
-        should(appendedWidget.user).eql(user._id);
+        should(concatenatedWidget.user).eql(user._id);
 
         done();
       });
     });
 
-    it('appends many children', function(done) {
-      user.widgets.append([widget, otherWidget], function(err, appendedWidgets){
-        should(appendedWidgets).have.lengthOf(2);
+    it('concatenates many children', function(done) {
+      user.widgets.concat([widget, otherWidget], function(err, concatenatedWidgets){
+        should(concatenatedWidgets).have.lengthOf(2);
 
-        should(widget._id).eql(appendedWidgets[0]._id);
+        should(widget._id).eql(concatenatedWidgets[0]._id);
         should(widget.user).eql(user._id);
         should(widget.isNew).be.false;
-        should(appendedWidgets[0].user).eql(user._id);
-        should(appendedWidgets[0].isNew).be.false;
+        should(concatenatedWidgets[0].user).eql(user._id);
+        should(concatenatedWidgets[0].isNew).be.false;
 
-        should(otherWidget._id).eql(appendedWidgets[1]._id);
+        should(otherWidget._id).eql(concatenatedWidgets[1]._id);
         should(otherWidget.user).eql(user._id);
         should(otherWidget.isNew).be.false;
-        should(appendedWidgets[1].user).eql(user._id);
-        should(appendedWidgets[1].isNew).be.false;
+        should(concatenatedWidgets[1].user).eql(user._id);
+        should(concatenatedWidgets[1].isNew).be.false;
 
         done();
       });
@@ -254,16 +254,46 @@ describe.only('hasMany without options', function(){
 
   });
 
-  describe('concat', function(){
+  describe('append', function(){
     before(function(){
       user = new User({});
     });
 
-    it('is sugar for append', function(){
-      should(user.widgets.append).eql(user.widgets.concat);
+    it('is sugar for concat', function(){
+      should(user.widgets.concat).eql(user.widgets.append);
     });
   });
 
+  describe('push', function(){
+    var otherWidget;
+
+    before(function(){
+      user = new User({});
+      widget = new Widget({});
+      otherWidget = new Widget({});
+      should(widget.user).eql(undefined);
+      should(otherWidget.user).eql(undefined);
+    });
+
+    it('adds relationship information to the child', function(){
+      var returnedWidget = user.widgets.push(widget);
+      should(widget.user).eql(user._id);
+      should(returnedWidget.user).eql(user._id);
+      should(returnedWidget._id).eql(widget._id);
+    });
+
+    it('adds relationship information to many children', function(){
+      var returnedWidgets = user.widgets.push([ widget, otherWidget ]);
+      should(widget.user).eql(user._id);
+      should(otherWidget.user).eql(user._id);
+
+      should(returnedWidgets[0].user).eql(user._id);
+      should(returnedWidgets[0]._id).eql(widget._id);
+
+      should(returnedWidgets[1].user).eql(user._id);
+      should(returnedWidgets[1]._id).eql(otherWidget._id);
+    });
+  });
 });
 
 describe('hasMany', function() {
