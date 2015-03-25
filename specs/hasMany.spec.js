@@ -3,86 +3,207 @@ require('./spec_helper');
 var mongoose     = require('mongoose')
   , async        = require('async')
   , should       = require('should')
+  , uuid         = require('node-uuid')
   , User         = require('./support/userModel')
-  , Tweet        = require('./support/tweetModel')
-  , Tag          = require('./support/tagModel')
-  , Address      = require('./support/addressModel')
-  , Notification = require('./support/notificationModel')
-  , Category     = require('./support/categoryModel')
-  , Pet          = require('./support/petModel')
-  , Dog          = require('./support/dogModel')
-  , Fish         = require('./support/fishModel')
-  , Location     = require('./support/locationModel');
+  , Tweet        = require('./support/tweetModel');
+  //, Tag          = require('./support/tagModel')
+  //, Address      = require('./support/addressModel')
+  //, Notification = require('./support/notificationModel')
+  //, Category     = require('./support/categoryModel')
+  //, Pet          = require('./support/petModel')
+  //, Dog          = require('./support/dogModel')
+  //, Fish         = require('./support/fishModel')
+  //, Location     = require('./support/locationModel');
 
-describe('hasMany', function() {
-  describe('setup', function() {
-    it('has hasMany on the path', function() {
-      User.schema.paths.tweets.options.hasMany.should.equal('Tweet');
+
+describe.only('-hasMany', function(){
+  var schema, Model, subject;
+
+  describe('schema', function(){
+    beforeEach(function(){
+      schema = new mongoose.Schema({});
+      schema.hasMany('Book');
+      mongoose.model('Person_' + uuid.v4(), schema);
     });
 
-    it('defaults setParent to true', function() {
-      User.schema.paths.tweets.options.setParent.should.be.true
-    });
-
-    it('sets setParent on the path', function() {
-      User.schema.paths.notifications.options.setParent.should.be.false
+    it('has a virtual to represent the relationship', function(){
+      should(schema.virtuals.books).not.equal(undefined);
+      should(schema.virtuals.books.path).equal('books');
     });
   });
-});
 
-describe('hasMany', function() {
-  describe('Child Relationship', function() {
+  describe('instance', function(){
+    beforeEach(function(){
+      schema = new mongoose.Schema({});
+      schema.hasMany('Book');
+      Model = mongoose.model('Person_' + uuid.v4(), schema);
+      subject = new Model();
+    });
+
+    it('returns a relationship', function(){
+      should(subject.books.build).be.a.Function;
+      should(subject.books.create).be.a.Function;
+      should(subject.books.find).be.a.Function;
+      should(subject.books.findOne).be.a.Function;
+      should(subject.books.append).be.a.Function;
+      should(subject.books.concat).be.a.Function;
+      should(subject.books.remove).be.a.Function;
+      should(subject.books.delete).be.a.Function;
+    });
+  });
+
+  describe('build', function(){
+    var user, built;
+
+    beforeEach(function(){
+      user = new User({});
+    });
+
     it('instantiates one child document', function() {
-      var user  = new User({}),
-          tweet = { title: 'Easy relationships with mongoose-relationships' };
-
-      var built = user.tweets.build(tweet);
+      built = user.tweets.build({ title: 'Easy relationships with mongoose-relationships' });
 
       built.should.be.an.instanceof(Tweet);
       built.author.should.eql(user._id);
       built.title.should.equal('Easy relationships with mongoose-relationships')
-
-      user.tweets.should.have.length(1);
     });
 
-    it('instantiates many children documents', function(done) {
-      var user   = new User(),
-          tweets = [{}, {}];
+    it('instantiates many children documents', function() {
+      built = user.tweets.build([{}, {}]);
 
-      var built = user.tweets.build(tweets);
-
-      user.tweets.should.have.length(2);
-
-      var count = built.length;
       built.forEach(function(tweet){
-        tweet.should.be.an.instanceof(Tweet);
-        tweet.author.should.eql(user._id);
-        --count || done();
+        should(tweet).be.an.instanceof(Tweet);
+        should(tweet.author).eql(user._id);
       });
     });
+  });
+
+  describe('create', function(){
+    var user;
+
+    beforeEach(function(){
+      user = new User({});
+    });
+
+    it('creates one child document', function(done) {
+      user.tweets.create({ title: 'Easy' }, function(err, tweet) {
+        should.strictEqual(err, null);
+
+        should(tweet).be.an.instanceof(Tweet);
+        should(tweet.title).equal('Easy')
+        should(tweet.author).equal(user._id);
+        done();
+      });
+    });
+
+    it('creates many child document', function(done) {
+      user.tweets.create([{}, {}], function(err, tweets) {
+        should.strictEqual(err, null);
+
+        tweets.forEach(function(tweet){
+          should(tweet).be.an.instanceof(Tweet);
+          should(tweet.author).equal(user._id);
+        });
+
+        done();
+      });
+    });
+  });
+
+  describe('find', function(){
+    var user, find;
+
+    beforeEach(function(){
+      user = new User({});
+    });
+
+    it('returns a criteria', function() {
+      find = user.tweets.find();
+      should(find).be.instanceOf(mongoose.Query);
+      should(find.op).equal('find');
+      should(find.model.modelName).equal('Tweet');
+      should(find._conditions.author).equal(user._id);
+    });
+
+    it('handles query', function() {
+      find = user.tweets.find({ title: 'Win' });
+      should(find._conditions.title).equal('Win');
+    });
+
+    it('handles fields', function() {
+      find = user.tweets.find({}, 'title');
+      should(find._fields.title).eql(1);
+    });
+
+    it('handles options', function() {
+      find = user.tweets.find({}, 'title', { skip: 6, limit: 3 });
+      should(find.options.skip).eql(6);
+      should(find.options.limit).eql(3);
+    });
+
+    describe('handling a callbacks', function(done){
+      beforeEach(function(done){
+        var tweets = [ { title: 'Simple' }, { title: 'Difficult' } ];
+
+        user.tweets.create(tweets, function(err, tweets) {
+          should.strictEqual(err, null);
+          done();
+        });
+      });
+
+      it('with conditions, fields, options, callback', function(done) {
+        find = user.tweets.find({}, null, null, function(err, tweets){
+          should(tweets).have.lengthOf(2);
+          tweets.forEach(function(tweet){
+            should(tweet).be.an.instanceof(Tweet);
+          });
+          done();
+        });
+
+        should(find).be.instanceOf(mongoose.Query);
+      });
+
+      it('with conditions, fields, callback', function(done) {
+        find = user.tweets.find({}, null, function(err, tweets){
+          should(tweets).have.lengthOf(2);
+          tweets.forEach(function(tweet){
+            should(tweet).be.an.instanceof(Tweet);
+          });
+          done();
+        });
+
+        should(find).be.instanceOf(mongoose.Query);
+      });
+
+      it('with conditions, callback', function(done) {
+        find = user.tweets.find({}, function(err, tweets){
+          should(tweets).have.lengthOf(2);
+          tweets.forEach(function(tweet){
+            should(tweet).be.an.instanceof(Tweet);
+          });
+          done();
+        });
+
+        should(find).be.instanceOf(mongoose.Query);
+      });
+
+      it('with callback', function(done) {
+        find = user.tweets.find(function(err, tweets){
+          should(tweets).have.lengthOf(2);
+          tweets.forEach(function(tweet){
+            should(tweet).be.an.instanceof(Tweet);
+          });
+          done();
+        });
+
+        should(find).be.instanceOf(mongoose.Query);
+      });
+    });
+
   });
 });
 
 describe('hasMany', function() {
   describe('Parent Relationship', function() {
-    it('creates one child document', function(done) {
-      var user  = new User(),
-          tweet = { title: 'Easy relationships with mongoose-relationships' };
-
-      user.tweets.create(tweet, function(err, user, tweet) {
-        should.strictEqual(err, null);
-
-        user.should.be.an.instanceof(User);
-        user.tweets.should.have.length(1);
-        user.tweets[0].should.equal(tweet._id);
-
-        tweet.should.be.an.instanceof(Tweet);
-        tweet.title.should.equal('Easy relationships with mongoose-relationships')
-        tweet.author.should.equal(user._id);
-        done();
-      });
-    });
-
     it('appends one instantiated child document', function(done) {
       var user  = new User(),
           tweet = new Tweet();
@@ -108,27 +229,6 @@ describe('hasMany', function() {
           tweet.author.should.eql(user._id);
           user.tweets.should.containEql(tweet._id);
           --count || done();
-        });
-      });
-    });
-
-    it('creates many children documents', function(done) {
-      var user = new User(),
-          tweets = [ { title: 'Blog tweet #1' },
-                     { title: 'Blog tweet #2' } ];
-
-      user.tweets.create(tweets, function(err, user, tweets) {
-        should.strictEqual(err, null);
-
-        user.tweets.should.have.length(2);
-        tweets.should.have.length(2);
-
-        var count = tweets.length;
-        tweets.forEach(function(tweet) {
-          user.tweets.should.containEql(tweet._id)
-          tweet.should.be.an.instanceof(Tweet);
-          tweet.author.should.equal(user._id);
-          --count || done()
         });
       });
     });
