@@ -263,6 +263,14 @@ describe.only('-hasMany', function(){
     });
 
   });
+
+  describe('concat', function(){
+    it('is sugar for append', function(){
+      var user = new User({});
+      should(user.tweets.append).eql(user.tweets.concat);
+    });
+  });
+
 });
 
 describe('hasMany', function() {
