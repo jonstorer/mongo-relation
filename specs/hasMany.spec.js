@@ -561,7 +561,7 @@ describe('hasMany discriminated', function() {
   });
 });
 
-describe('#touch_', function(){
+describe('#__touch', function(){
   var postSchema, Post, post;
 
   before(function(){

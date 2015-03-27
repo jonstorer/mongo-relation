@@ -115,22 +115,17 @@ describe('belongsTo', function() {
         , mailboxSchema, Mailbox, mailbox;
 
       before(function(done) {
-        messageSchema = new mongoose.Schema({ body: String});
+        messageSchema = new mongoose.Schema({ });
         messageSchema.belongsTo('mailbox', { touch: true });
         Message = mongoose.model('Message', messageSchema);
 
-        mailboxSchema = new mongoose.Schema({ cacheKey: String });
+        mailboxSchema = new mongoose.Schema({ });
         mailboxSchema.hasMany('messages');
-
-        mailboxSchema.pre('save', function(next){
-          this.cacheKey = uuid.v4();
-          next();
-        });
 
         Mailbox = mongoose.model('Mailbox', mailboxSchema);
         mailbox = new Mailbox();
         mailbox.save(function(err){
-          mailbox.messages.create({ body: 'Old Stuff' }, function(err, msg){
+          mailbox.messages.create({ }, function(err, msg){
             message = msg;
             done();
           });
@@ -138,12 +133,11 @@ describe('belongsTo', function() {
       });
 
       it('touches the parent document before save', function(done) {
-        var mailboxCacheKey = mailbox.cacheKey;
-        message.body = 'New Stuff';
+        var oldVersion = mailbox.__v;
         message.save(function(err){
           should.strictEqual(err, null);
           Mailbox.findById(mailbox._id, function(err, mailbox){
-            should(mailbox.cacheKey).not.eql(mailboxCacheKey);
+            should(mailbox.__v).not.eql(oldVersion);
             done();
           });
         });
