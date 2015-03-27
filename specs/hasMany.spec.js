@@ -332,68 +332,83 @@ describe('hasMany without options', function(){
   });
 });
 
-describe('hasMany dependent:destroy', function(){
-  var postSchema, Post, post, likeSchema, Like, like;
+describe('hasMany dependent', function(){
+  var postSchema, Post, post
+    , likeSchema, Like, like, likeEventCalled = false
+    , favoriteSchema, Favorite, favorite, favoriteEventCalled = false
+    , repostSchema, Repost, repost, repostEventCalled = false;
 
   before(function(done){
     likeSchema = mongoose.Schema({});
     likeSchema.belongsTo('post');
+    likeSchema.pre('remove', function(next){ Like.emit('destroy-test-event', this); next(); });
     Like = mongoose.model('Like', likeSchema);
+    Like.once('destroy-test-event', function(){ likeEventCalled = true; });
+
+    favoriteSchema = mongoose.Schema({});
+    favoriteSchema.belongsTo('post');
+    favoriteSchema.pre('remove', function(next){ Favorite.emit('destroy-test-event', this); next(); });
+    Favorite = mongoose.model('Favorite', favoriteSchema);
+    Favorite.once('destroy-test-event', function(){ favoriteEventCalled = true; });
+
+    repostSchema = mongoose.Schema({});
+    repostSchema.belongsTo('post');
+    repostSchema.pre('remove', function(next){ Repost.emit('destroy-test-event', this); next(); });
+    Repost = mongoose.model('Repost', repostSchema);
+    Repost.once('destroy-test-event', function(){ repostEventCalled = true; });
 
     postSchema = new mongoose.Schema({});
-    postSchema.hasMany('likes', { dependent: 'destroy' });
+    postSchema.hasMany('likes', { dependent: 'delete' });
+    postSchema.hasMany('favorites', { dependent: 'destroy' });
+    postSchema.hasMany('reposts', { dependent: 'nullify' });
     Post = mongoose.model('Post', postSchema);
 
-    new Post().save(function(err, p){
-      p.likes.create({}, function(err, l){
-        post = p;
-        like = l;
-        done();
+    new Post().save(function(err, post){
+      async.parallel({
+        like: function(cb){ post.likes.create({}, cb); },
+        favorite: function(cb){ post.favorites.create({}, cb); },
+        repost: function(cb){ post.reposts.create({}, cb); },
+      }, function(err, output){
+        favorite = output.favorite[0];
+        like = output.like[0];
+        repost = output.repost[0];
+        post.remove(done);
       });
     });
   });
 
-  it('deletes children', function(done){
-    post.remove(function(err){
+  describe('delete', function(){
+    it('removes children', function(done){
       Like.findById(like._id, function(err, like){
         should.strictEqual(like, null);
         done();
       });
     });
-  });
-});
 
-describe('hasMany dependent:nullify', function(){
-  var clubSchema, Club, club, kidSchema, Kid, kid;
-
-  before(function(done){
-    kidSchema = mongoose.Schema({ });
-    kidSchema.belongsTo('club');
-    Kid = mongoose.model('Kid', kidSchema);
-
-    clubSchema = new mongoose.Schema({});
-    clubSchema.hasMany('kids', { dependent: 'nullify' });
-    Club = mongoose.model('Club', clubSchema);
-
-    new Club().save(function(err, c){
-      c.kids.create({}, function(err, k){
-        club = c;
-        kid = k;
-        should(kid.club).eql(club._id);
-        done();
-      });
+    it('does not run child middlewares', function(){
+      should(likeEventCalled).be.false;
     });
   });
 
-  it('removes the parent reference from children', function(done){
-    club.remove(function(err){
-      Club.findById(club._id, function(err, club){
-        should.strictEqual(club, null);
-        Kid.findById(kid._id, function(err, kid){
-          should(kid.club).eql(undefined);
-          should(kid).be.instanceOf(Kid);
-          done();
-        });
+  describe('destroy', function(){
+    it('removes children', function(done){
+      Favorite.findById(favorite._id, function(err, favorite){
+        should.strictEqual(favorite, null);
+        done();
+      });
+    });
+
+    it('runs child middlewares', function(){
+      should(favoriteEventCalled).be.true;
+    });
+  });
+
+  describe('nullify', function(){
+    it('removes the parent reference from children', function(done){
+      Repost.findById(repost._id, function(err, repost){
+        should(repost.post).eql(undefined);
+        should(repost).be.instanceOf(Repost);
+        done();
       });
     });
   });
