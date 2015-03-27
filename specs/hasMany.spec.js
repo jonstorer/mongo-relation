@@ -561,7 +561,7 @@ describe('hasMany discriminated', function() {
   });
 });
 
-describe('#touch', function(){
+describe('#touch_', function(){
   var postSchema, Post, post;
 
   before(function(){
@@ -571,14 +571,14 @@ describe('#touch', function(){
   });
 
   it('has a method called touch', function(){
-    should(postSchema.methods.touch).be.a.Function;
+    should(postSchema.methods.__touch).be.a.Function;
   });
 
   it('saves the document when called', function(done){
     post = new Post;
     post.save(function (err) {
       var version = post.__v;
-      post.touch(function(err){
+      post.__touch(function(err){
         should(post.__v).not.eql(version);
         done();
       });
