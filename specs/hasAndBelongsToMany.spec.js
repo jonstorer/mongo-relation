@@ -1,16 +1,44 @@
 require('./spec_helper');
 
 var mongoose    = require('mongoose'),
-    should      = require('should'),
-    TwitterUser = require('./support/twitterUserModel'),
-    Pet         = require('./support/petModel')
-    Dog         = require('./support/dogModel')
-    Fish        = require('./support/fishModel')
-    TwitterPost = require('./support/twitterPostModel'),
-    Category    = require('./support/categoryModel'),
-    Tweet       = require('./support/tweetModel'),
-    Tag         = require('./support/tagModel'),
-    BookSchema  = new mongoose.Schema({});
+    should      = require('should');
+
+describe.only('hasManyBelongsToMany default options', function() {
+  var paintingSchema, Painting, painting
+    , colorSchema, Color, color;
+
+  before(function(){
+    paintingSchema = new mongoose.Schema({ title: String });
+    paintingSchema.hasAndBelongsToMany('colors');
+    Painting = mongoose.model('Painting', paintingSchema);
+
+    colorSchema = new mongoose.Schema({ name: String });
+    colorSchema.habtm('paintings');
+    Color = mongoose.model('Color', colorSchema);
+  });
+
+  it.skip('sets virtuals for the relationships', function(){
+    should(colorSchema.virtuals.paintings).be.an.instanceOf(mongoose.VirtualType);
+    should(paintingSchema.virtuals.colors).be.an.instanceOf(mongoose.VirtualType);
+  });
+
+  it.skip('sets schema for the relationships', function(){
+    console.log(colorSchema.paths.paintings);
+  });
+
+  describe('#build', function(){
+    it('initializes a new document with the appropriate association', function(){
+      console.log(colorSchema.paths.paintings);
+      var painting = new Painting({ title: 'Mona Lisa' });
+      console.log(painting.colors);
+      var color = painting.colors.build({ name: 'Black' });
+
+      //should(color.paintings).include(painting._id);
+
+    });
+
+  });
+});
 
 describe('hasManyBelongsToMany', function() {
   describe('valid options', function() {
