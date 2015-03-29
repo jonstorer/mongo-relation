@@ -1,7 +1,7 @@
 require('./spec_helper');
 
-var mongoose    = require('mongoose'),
-    should      = require('should');
+var mongoose = require('mongoose'),
+    should = require('should');
 
 describe.only('hasManyBelongsToMany default options', function() {
   var paintingSchema, Painting, painting
@@ -17,26 +17,22 @@ describe.only('hasManyBelongsToMany default options', function() {
     Color = mongoose.model('Color', colorSchema);
   });
 
-  it.skip('sets virtuals for the relationships', function(){
-    should(colorSchema.virtuals.paintings).be.an.instanceOf(mongoose.VirtualType);
-    should(paintingSchema.virtuals.colors).be.an.instanceOf(mongoose.VirtualType);
-  });
-
-  it.skip('sets schema for the relationships', function(){
-    console.log(colorSchema.paths.paintings);
-  });
-
   describe('#build', function(){
-    it('initializes a new document with the appropriate association', function(){
-      console.log(colorSchema.paths.paintings);
-      var painting = new Painting({ title: 'Mona Lisa' });
-      console.log(painting.colors);
-      var color = painting.colors.build({ name: 'Black' });
+    it('initializes a new document with the appropriate association', function(done){
+      painting = new Painting({ title: 'Mona Lisa' });
+      color = new Color({ name: 'Black' });
+      console.log(painting.colors.build);
+      painting.colors.push(color);
+      painting.save(function(err){
+        Painting.findById(painting._id, function(err, painting){
+          console.log(painting.colors);
+          done();
+        });
+      });
+      //color = painting.colors.build({ name: 'Black' });
 
       //should(color.paintings).include(painting._id);
-
     });
-
   });
 });
 
