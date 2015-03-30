@@ -6,7 +6,6 @@ var twitterPostSchema = new mongoose.Schema({
 
 twitterPostSchema.belongsTo('author', { modelName: 'TwitterUser' });
 
-// should not delete the reference
-twitterPostSchema.habtm('Category');
+twitterPostSchema.habtm('categories');
 
 module.exports = mongoose.model('TwitterPost', twitterPostSchema);

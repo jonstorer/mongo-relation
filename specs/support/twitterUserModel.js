@@ -6,6 +6,6 @@ twitterUserSchema.hasMany('categories');
 twitterUserSchema.hasMany('tags', { dependent: 'nullify' });
 twitterUserSchema.hasMany('tweets', { dependent: 'delete', inverse_of: 'author' });
 
-twitterUserSchema.habtm('Pet', { setParent: false })
+twitterUserSchema.habtm('pets', { setParent: false })
 
 module.exports = mongoose.model('TwitterUser', twitterUserSchema);
