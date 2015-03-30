@@ -1,9 +1,18 @@
 require('./spec_helper');
 
-var mongoose = require('mongoose'),
-    should = require('should');
+var mongoose = require('mongoose')
+  , should = require('should')
+  , TwitterUser = require('./support/twitterUserModel')
+  , Pet         = require('./support/petModel')
+  , Dog         = require('./support/dogModel')
+  , Fish        = require('./support/fishModel')
+  , TwitterPost = require('./support/twitterPostModel')
+  , Category    = require('./support/categoryModel')
+  , Tweet       = require('./support/tweetModel')
+  , Tag         = require('./support/tagModel')
+  , BookSchema  = new mongoose.Schema({});
 
-describe.only('hasManyBelongsToMany default options', function() {
+describe.skip('hasManyBelongsToMany default options', function() {
   var paintingSchema, Painting, painting
     , colorSchema, Color, color;
 
