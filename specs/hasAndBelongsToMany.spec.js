@@ -12,7 +12,7 @@ var mongoose = require('mongoose')
   , Tag         = require('./support/tagModel')
   , BookSchema  = new mongoose.Schema({});
 
-describe.skip('hasManyBelongsToMany default options', function() {
+describe.only('hasManyBelongsToMany without options', function() {
   var paintingSchema, Painting, painting
     , colorSchema, Color, color;
 
@@ -27,20 +27,25 @@ describe.skip('hasManyBelongsToMany default options', function() {
   });
 
   describe('#build', function(){
+    it('initializes a new document with the appropriate association', function(){
+      painting = new Painting({ title: 'Mona Lisa' });
+      color = painting.colors.build({ name: 'Black' });
+
+      should(color.paintings).containEql(painting._id);
+      should(painting.colors).containEql(color._id);
+    });
+  });
+
+  describe('#create', function(){
     it('initializes a new document with the appropriate association', function(done){
       painting = new Painting({ title: 'Mona Lisa' });
-      color = new Color({ name: 'Black' });
-      console.log(painting.colors.build);
-      painting.colors.push(color);
-      painting.save(function(err){
-        Painting.findById(painting._id, function(err, painting){
-          console.log(painting.colors);
-          done();
-        });
-      });
-      //color = painting.colors.build({ name: 'Black' });
+      painting.colors.create({ name: 'Black' }, function(err, _, color){
+        should(color.paintings).containEql(painting._id);
+        should(color.isNew).be.false;
+        should(painting.colors).containEql(color._id);
 
-      //should(color.paintings).include(painting._id);
+        done();
+      });
     });
   });
 });
