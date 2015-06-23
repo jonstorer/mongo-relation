@@ -1,9 +1,9 @@
 require('./spec_helper');
 
 var mongoose = require('mongoose')
-  , async    = require('async')
-  , should   = require('should')
-  , uuid     = require('node-uuid');
+  , async = require('async')
+  , should = require('should')
+  , uuid = require('node-uuid');
 
 describe('hasMany without options', function(){
   var userSchema, User, user, widgetSchema, Widget, widget;

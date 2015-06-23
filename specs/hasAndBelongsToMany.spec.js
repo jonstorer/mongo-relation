@@ -1,16 +1,54 @@
 require('./spec_helper');
 
-var mongoose    = require('mongoose'),
-    should      = require('should'),
-    TwitterUser = require('./support/twitterUserModel'),
-    Pet         = require('./support/petModel')
-    Dog         = require('./support/dogModel')
-    Fish        = require('./support/fishModel')
-    TwitterPost = require('./support/twitterPostModel'),
-    Category    = require('./support/categoryModel'),
-    Tweet       = require('./support/tweetModel'),
-    Tag         = require('./support/tagModel'),
-    BookSchema  = new mongoose.Schema({});
+var mongoose = require('mongoose')
+  , should = require('should')
+  , TwitterUser = require('./support/twitterUserModel')
+  , Pet = require('./support/petModel')
+  , Dog = require('./support/dogModel')
+  , Fish = require('./support/fishModel')
+  , TwitterPost = require('./support/twitterPostModel')
+  , Category = require('./support/categoryModel')
+  , Tweet = require('./support/tweetModel')
+  , Tag = require('./support/tagModel')
+  , BookSchema = new mongoose.Schema({});
+
+describe('hasManyBelongsToMany without options', function() {
+  var paintingSchema, Painting, painting
+    , colorSchema, Color, color;
+
+  before(function(){
+    paintingSchema = new mongoose.Schema({ title: String });
+    paintingSchema.hasAndBelongsToMany('colors');
+    Painting = mongoose.model('Painting', paintingSchema);
+
+    colorSchema = new mongoose.Schema({ name: String });
+    colorSchema.habtm('paintings');
+    Color = mongoose.model('Color', colorSchema);
+  });
+
+  describe('#build', function(){
+    it.only('initializes a new document with the appropriate association', function(){
+      painting = new Painting({ title: 'Mona Lisa' });
+      color = painting.colors.build({ name: 'Black' });
+
+      should(color.paintings, 'paintings should contain painting.id').containEql(painting._id);
+      should(painting.colors, 'colors should contain color.id').containEql(color._id);
+    });
+  });
+
+  describe('#create', function(){
+    it('initializes a new document with the appropriate association', function(done){
+      painting = new Painting({ title: 'Mona Lisa' });
+      painting.colors.create({ name: 'Black' }, function(err, _, color){
+        should(color.paintings).containEql(painting._id);
+        should(color.isNew).be.false;
+        should(painting.colors).containEql(color._id);
+
+        done();
+      });
+    });
+  });
+});
 
 describe('hasManyBelongsToMany', function() {
   describe('valid options', function() {
