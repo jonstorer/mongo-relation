@@ -3,16 +3,16 @@ require('./spec_helper');
 var mongoose = require('mongoose')
   , should = require('should')
   , TwitterUser = require('./support/twitterUserModel')
-  , Pet         = require('./support/petModel')
-  , Dog         = require('./support/dogModel')
-  , Fish        = require('./support/fishModel')
+  , Pet = require('./support/petModel')
+  , Dog = require('./support/dogModel')
+  , Fish = require('./support/fishModel')
   , TwitterPost = require('./support/twitterPostModel')
-  , Category    = require('./support/categoryModel')
-  , Tweet       = require('./support/tweetModel')
-  , Tag         = require('./support/tagModel')
-  , BookSchema  = new mongoose.Schema({});
+  , Category = require('./support/categoryModel')
+  , Tweet = require('./support/tweetModel')
+  , Tag = require('./support/tagModel')
+  , BookSchema = new mongoose.Schema({});
 
-describe.only('hasManyBelongsToMany without options', function() {
+describe('hasManyBelongsToMany without options', function() {
   var paintingSchema, Painting, painting
     , colorSchema, Color, color;
 
@@ -27,12 +27,12 @@ describe.only('hasManyBelongsToMany without options', function() {
   });
 
   describe('#build', function(){
-    it('initializes a new document with the appropriate association', function(){
+    it.only('initializes a new document with the appropriate association', function(){
       painting = new Painting({ title: 'Mona Lisa' });
       color = painting.colors.build({ name: 'Black' });
 
-      should(color.paintings).containEql(painting._id);
-      should(painting.colors).containEql(color._id);
+      should(color.paintings, 'paintings should contain painting.id').containEql(painting._id);
+      should(painting.colors, 'colors should contain color.id').containEql(color._id);
     });
   });
 
