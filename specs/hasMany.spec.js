@@ -250,19 +250,16 @@ describe('hasMany without options', function(){
         should(find).be.instanceOf(mongoose.Query);
       });
     });
-
   });
 
   describe('findOne', function(){
-    let find;
-
     before(function(done){
       user = new User();
       user.widgets.create({ }, { }, done);
     });
 
     it('returns a findOne critera', function() {
-      find = user.widgets.findOne();
+      let find = user.widgets.findOne();
       should(find).be.instanceOf(mongoose.Query);
       should(find.op).equal('findOne');
       should(find.model.modelName).equal('Widget');
@@ -407,25 +404,18 @@ describe('hasMany dependent', function(){
     , favoriteSchema, Favorite, favorite, favoriteEventCalled = false
     , repostSchema, Repost, repost, repostEventCalled = false;
 
-  //before(function(done){
   before(function(){
     likeSchema = mongoose.Schema({});
     likeSchema.belongsTo('post');
-    //likeSchema.pre('remove', function(next){ Like.emit('destroy-test-event', this); next(); });
     Like = mongoose.model('Like', likeSchema);
-    //Like.once('destroy-test-event', function(){ likeEventCalled = true; });
 
     favoriteSchema = mongoose.Schema({});
     favoriteSchema.belongsTo('post');
-    //favoriteSchema.pre('remove', function(next){ Favorite.emit('destroy-test-event', this); next(); });
     Favorite = mongoose.model('Favorite', favoriteSchema);
-    //Favorite.once('destroy-test-event', function(){ favoriteEventCalled = true; });
 
     repostSchema = mongoose.Schema({});
     repostSchema.belongsTo('post');
-    //repostSchema.pre('remove', function(next){ Repost.emit('destroy-test-event', this); next(); });
     Repost = mongoose.model('Repost', repostSchema);
-    //Repost.once('destroy-test-event', function(){ repostEventCalled = true; });
 
     postSchema = new mongoose.Schema({});
     postSchema.hasMany('likes', { dependent: 'delete' });
@@ -454,10 +444,6 @@ describe('hasMany dependent', function(){
         done();
       });
     });
-
-    it('does not run child middlewares', function(){
-      should(likeEventCalled).be.false;
-    });
   });
 
   describe('destroy', function(){
@@ -466,10 +452,6 @@ describe('hasMany dependent', function(){
         should.strictEqual(doc, null);
         done();
       });
-    });
-
-    it('runs child middlewares', function(){
-      should(favoriteEventCalled).be.true;
     });
   });
 
