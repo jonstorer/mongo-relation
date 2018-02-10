@@ -1,16 +1,15 @@
 'use strict';
 
-let mongoose = require('./');;
-let should = require('should');
-let uuid = require('node-uuid');
+const mongoose = require('./');;
+const should = require('should');
+const uuid = require('node-uuid');
 
 describe('belongsTo', function() {
-  let subject, schema, partSchema, spareModel;
-
   before(function() {
     partSchema = new mongoose.Schema({});
     partSchema.belongsTo('widget');
-    schema = mongoose.model('Part_' + uuid.v4(), partSchema).schema;
+    Part = mongoose.model('Part_' + uuid.v4(), partSchema);
+    schema = Part.schema;
     subject = schema.paths.widget;
   });
 

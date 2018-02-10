@@ -1,5 +1,7 @@
 let mongoose = require('../')(require('mongoose'));
 
+require('./models');
+
 let resetDb = function(next){
   mongoose.connection.db.dropDatabase(next);
 };

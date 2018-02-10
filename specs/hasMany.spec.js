@@ -1,12 +1,12 @@
-require('./');
+'use strict';
 
-let mongoose = require('mongoose')
-  , async    = require('async')
-  , should   = require('should')
-  , uuid     = require('node-uuid');
+const mongoose = require('./');
+const should = require('should');
+const uuid = require('node-uuid');
 
-describe('hasMany without options', function(){
-  let userSchema, User, user, widgetSchema, Widget, widget;
+describe('hasMany', function(){
+  let userSchema, User, user,
+      widgetSchema, Widget, widget;
 
   before(function(){
     widgetSchema = mongoose.Schema({ name: String });
@@ -19,32 +19,34 @@ describe('hasMany without options', function(){
     User = mongoose.model('User', userSchema);
   });
 
-  describe('schema', function(){
-    it('has a virtual to represent the relationship', function(){
-      should(userSchema.virtuals.widgets).not.equal(undefined);
-      should(userSchema.virtuals.widgets.path).equal('widgets');
-      should(userSchema.virtuals.wadgets).not.equal(undefined);
-      should(userSchema.virtuals.wadgets.path).equal('wadgets');
-      should((new User).wadgets.associationModelName).equal('Widget');
-    });
-  });
-
-  describe('instance', function(){
-    before(function(){
-      user = new User();
+  describe('setup', function () {
+    describe('schema', function(){
+      it('has a virtual to represent the relationship', function(){
+        should(userSchema.virtuals.widgets).not.equal(undefined);
+        should(userSchema.virtuals.widgets.path).equal('widgets');
+        should(userSchema.virtuals.wadgets).not.equal(undefined);
+        should(userSchema.virtuals.wadgets.path).equal('wadgets');
+        should((new User).wadgets.associationModelName).equal('Widget');
+      });
     });
 
-    it('returns a relationship', function(){
-      should(user.widgets.build).be.a.Function;
-      should(user.widgets.create).be.a.Function;
-      should(user.widgets.find).be.a.Function;
-      should(user.widgets.findOne).be.a.Function;
-      should(user.widgets.append).be.a.Function;
-      should(user.widgets.concat).be.a.Function;
-      should(user.widgets.remove).be.a.Function;
-      should(user.widgets.delete).be.a.Function;
+    describe('instance', function(){
+      before(function(){
+        user = new User();
+      });
+
+      it('returns a relationship', function(){
+        should(user.widgets.build).be.a.Function;
+        should(user.widgets.create).be.a.Function;
+        should(user.widgets.find).be.a.Function;
+        should(user.widgets.findOne).be.a.Function;
+        should(user.widgets.append).be.a.Function;
+        should(user.widgets.concat).be.a.Function;
+        should(user.widgets.remove).be.a.Function;
+        should(user.widgets.delete).be.a.Function;
+      });
     });
-  });
+  })
 
   describe('build', function(){
     before(function(){
@@ -52,17 +54,17 @@ describe('hasMany without options', function(){
     });
 
     it('instantiates one child document', function() {
-      built = user.widgets.build({ name: 'Beam' });
+      let widget = user.widgets.build({ name: 'Beam' });
 
-      should(built).be.an.instanceof(Widget);
-      should(built.user).eql(user._id);
-      should(built.name).equal('Beam')
+      should(widget).be.an.instanceof(Widget);
+      should(widget.user).eql(user._id);
+      should(widget.name).equal('Beam')
     });
 
     it.skip('instantiates many children documents', function() {
-      built = user.widgets.build([{}, {}]);
+      let widgets = user.widgets.build([{}, {}]);
 
-      built.forEach(function(widget){
+      widgets.forEach(function(widget){
         should(widget).be.an.instanceof(Widget);
         should(widget.user).eql(user._id);
       });
@@ -275,7 +277,7 @@ describe('hasMany without options', function(){
   });
 
   describe('concat', function(){
-    let other_widget;
+    let user, widget, otherWidget;
 
     before(function(){
       user = new User();
@@ -529,7 +531,8 @@ describe('hasMany polymorphic:true', function() {
 });
 
 describe('hasMany inverse_of', function() {
-  let Reader, reader, Book;
+  let readerSchema, Reader, reader,
+      bookSchema, Book, book;
 
   before(function(){
     readerSchema = mongoose.Schema({ });
