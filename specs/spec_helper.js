@@ -14,6 +14,10 @@ before(function(done){
   }
 });
 
+after(function(){
+  mongoose.disconnect();
+})
+
 var host = process.env.BOXEN_MONGODB_URL || process.env.MONGOOSE_TEST_URL || 'mongodb://localhost/';
 var uri = host + 'mongo_relations';
 

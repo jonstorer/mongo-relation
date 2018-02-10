@@ -373,9 +373,9 @@ describe('hasMany dependent', function(){
         favorite: function(cb){ post.favorites.create({}, cb); },
         repost: function(cb){ post.reposts.create({}, cb); },
       }, function(err, output){
-        favorite = output.favorite[0];
-        like = output.like[0];
-        repost = output.repost[0];
+        favorite = output.favorite;
+        like = output.like;
+        repost = output.repost;
         post.remove(done);
       });
     });
