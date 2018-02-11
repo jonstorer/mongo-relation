@@ -6,9 +6,11 @@ module.exports = function (mongoose, uuid) {
       type: String,
       default: function () { return Date.now() }
     }
-  });
+  }, { timestamps: true });
 
   accountSchema.hasOne('subscription');
+  accountSchema.hasMany('notes', { as: 'notable' });
+  accountSchema.hasMany('memberships');
 
   return mongoose.model('Account', accountSchema);
 };

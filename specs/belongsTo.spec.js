@@ -5,157 +5,161 @@ const should = require('should');
 const uuid = require('node-uuid');
 
 describe('belongsTo', function() {
+  let membershipSchema, Membership,
+      userSchema, User,
+      accountSchema, Account;
+
   before(function() {
-    partSchema = new mongoose.Schema({});
-    partSchema.belongsTo('widget');
-    Part = mongoose.model('Part_' + uuid.v4(), partSchema);
-    schema = Part.schema;
-    subject = schema.paths.widget;
+    Membership = mongoose.model('Membership');
+    membershipSchema = Membership.schema;
+
+    Account = mongoose.model('Account');
+    accountSchema = Account.schema;
+
+    User = mongoose.model('User');
+    userSchema = User.schema;
   });
 
   it('creates a path for widget on the schema', function() {
-    should(schema.paths.widget).exist;
+    should(membershipSchema.paths.user).exist;
+    should(membershipSchema.paths.account).exist;
   });
 
   it('sets the relationship type', function() {
-    should(subject.options.relationshipType).equal('belongsTo');
+    should(membershipSchema.paths.user.options.relationshipType).equal('belongsTo');
+    should(membershipSchema.paths.account.options.relationshipType).equal('belongsTo');
   });
 
   it('sets the instance', function() {
-    should(subject.instance).equal('ObjectID');
+    should(membershipSchema.paths.user.instance).equal('ObjectID');
+    should(membershipSchema.paths.account.instance).equal('ObjectID');
   });
 
   it('sets the ref', function() {
-    should(subject.options.ref).equal('Widget');
+    should(membershipSchema.paths.user.options.ref).equal('User');
+    should(membershipSchema.paths.account.options.ref).equal('Account');
   });
 
-  it('defaults required to undefined', function() {
-    should(subject.isRequired).eql(false);
+  it('can set required', function() {
+    should(membershipSchema.paths.user.isRequired).eql(true);
+    should(membershipSchema.paths.account.isRequired).eql(false);
   });
 
   describe('options', function() {
+    let path;
+
     describe('custom name', function() {
       before(function() {
-        partSchema = new mongoose.Schema({});
-        partSchema.belongsTo('owner', { modelName: 'Widget' });
-        schema = mongoose.model('Part_' + uuid.v4(), partSchema).schema;
-        subject = schema.paths.owner;
+        path = mongoose.model('BenefitBundlePrice').schema.paths.availability_zone;
       });
 
       it('sets the custom named path', function() {
-        should(subject).not.equal(undefined);
+        should(path).not.equal(undefined);
       });
 
       it('sets ref to the passed in modelName', function() {
-        should(subject.options.ref).equal('Widget');
+        should(path.options.ref).equal('ServiceArea');
       });
     });
 
     describe('required', function() {
+      let path;
+
       before(function() {
-        partSchema = new mongoose.Schema({});
-        partSchema.belongsTo('widget', { required: true });
-        schema = mongoose.model('Part_' + uuid.v4(), partSchema).schema;
-        subject = schema.paths.widget;
+        path = mongoose.model('BenefitBundlePrice').schema.paths.plan;
       });
 
       it('passes through the required field', function() {
-        should(subject.isRequired).be.true;
+        should(path.isRequired).be.true;
       });
     });
 
     describe('polymorphic', function() {
+      let subject_type, subject_id;
+
       before(function() {
-        let partSchema = new mongoose.Schema({}),
-            spareSchema = new mongoose.Schema({});
-        partSchema.belongsTo('assemblable', { polymorphic: true, required: true, enum: [ 'Bed', 'Dresser', 'Chair' ] });
-        spareSchema.belongsTo('assemblable', { polymorphic: true, });
-        schema = mongoose.model('Part_' + uuid.v4(), partSchema).schema;
-        spareModel = mongoose.model('Spare_' + uuid.v4(), spareSchema).schema;
+        subject_type = mongoose.model('Note').schema.paths.noteable_type;
+        subject_id = mongoose.model('Note').schema.paths.noteable;
       });
 
       describe('ObjectID half', function() {
-        before(function() { subject = schema.paths.assemblable; });
-
         it('exists', function() {
-          should(subject).exist;
+          should(subject_id).exist;
         });
 
         it('sets the id property', function() {
-          should(subject.instance).equal('ObjectID');
+          should(subject_id.instance).equal('ObjectID');
         });
 
         it('knows it is a part of a polymorphic relationship', function() {
-          should(subject.options.polymorphic).be.true;
+          should(subject_id.options.polymorphic).be.true;
         });
 
         it('passes through options', function() {
-          should(subject.isRequired).eql(true);
+          should(subject_id.isRequired).eql(true);
         });
       });
 
       describe('Type half', function() {
-        before(function() { subject = schema.paths.assemblable_type; });
-
         it('creates the type path', function() {
-          should(subject).not.eql(undefined);
+          should(subject_type).not.eql(undefined);
         });
 
         it('sets the type as String', function() {
-          should(subject.instance).equal('String');
+          should(subject_type.instance).equal('String');
         });
 
         it('passes through options', function() {
-          should(subject.isRequired).eql(true);
+          should(subject_type.isRequired).eql(true);
         });
       });
 
       describe('enum', function() {
         it('applies the provided enum to the _type path', function() {
-          should(schema.paths.assemblable_type.enumValues).containDeepOrdered([ 'Bed', 'Dresser', 'Chair' ]);
+          should(subject_type.enumValues).containDeepOrdered([ 'User', 'Account' ]);
         });
       });
 
-      describe('setting required to false', function() {
-        it('sets required on the id to false', function() {
-          should(spareModel.paths.assemblable.isRequired).eql(false);
+      describe('setting required to true', function() {
+        it('sets required on the id to true', function() {
+          should(subject_id.isRequired).eql(true);
         });
 
-        it('sets required on the type to false', function() {
-          should(spareModel.paths.assemblable_type.isRequired).eql(false);
+        it('sets required on the type to true', function() {
+          should(subject_type.isRequired).eql(true);
         });
       });
     });
 
     describe('touch:true', function() {
-      let messageSchema, Message, message
-        , mailboxSchema, Mailbox, mailbox;
+      let membership, userVersion, accountVersion;
 
       before(function() {
-        messageSchema = new mongoose.Schema({ });
-        messageSchema.belongsTo('mailbox', { touch: true });
-        Message = mongoose.model('Message', messageSchema);
+        let User = mongoose.model('User');
+        let Membership = mongoose.model('Membership');
+        let Account = mongoose.model('Account');
 
-        mailboxSchema = new mongoose.Schema({ });
-        mailboxSchema.hasMany('messages');
-        Mailbox = mongoose.model('Mailbox', mailboxSchema);
-
-        return Mailbox.create({}).then(function(_mailbox) {
-          mailbox = _mailbox;
-          return mailbox.messages.create({ });
-        }).then(function (msg) {
-          message = msg;
-        }).catch(function (err) {
-          throw (err);
+        return Promise.all([
+          User.create({}),
+          Account.create({})
+        ]).then(function (values) {
+          return Membership.create({
+            user: values[0],
+            account: values[1]
+          });
+        }).then(function (_membership) {
+          membership = _membership;
+          userVersion = membership.user.__v;
+          accountVersion = membership.account.__v;
         });
       });
 
       it('touches the parent document before save', function() {
-        let oldVersion = mailbox.__v;
-        return message.save().then(function(){
-          return Mailbox.findById(mailbox._id);
-        }).then(function(mailbox){
-          should(mailbox.__v).not.eql(oldVersion);
+        return membership.save().then(function(){
+          return Membership.findById(membership._id).populate('user account');
+        }).then(function(membership){
+          should(membership.user.__v).not.eql(userVersion);
+          should(membership.account.__v).eql(accountVersion);
         });
       });
     });
