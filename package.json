@@ -24,16 +24,18 @@
   },
   "main": "./index.js",
   "engines": {
-    "node": ">= 0.2.0"
+    "node": ">= 8"
   },
   "dependencies": {
-    "mongoose": ">=3.0.0",
     "async": "^0.9.0",
-    "i": "^0.3.2"
+    "i": "^0.3.2",
+    "why-is-node-running": "^1.2.3",
+    "wtfnode": "^0.5.7"
   },
   "devDependencies": {
-    "mocha": "latest",
-    "should": "latest",
-    "node-uuid": "^1.4.3"
+    "mocha": "^5.0.0",
+    "mongoose": ">=3.0.0",
+    "node-uuid": "latest",
+    "should": "latest"
   }
 }

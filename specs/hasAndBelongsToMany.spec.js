@@ -1,8 +1,6 @@
 'use strict';
 
-require('./spec_helper');
-
-const mongoose = require('mongoose');
+const mongoose = require('./');
 const should = require('should');
 
 describe('hasManyBelongsToMany', function() {
@@ -138,8 +136,6 @@ describe('hasManyBelongsToMany', function() {
 
         should(addresses[1].users).have.length(1);
         should(addresses[1].users).containEql(user._id);
-
-        done();
       });
     });
   });

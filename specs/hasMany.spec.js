@@ -1,12 +1,12 @@
-require('./spec_helper');
+'use strict';
 
-var mongoose = require('mongoose')
-  , async    = require('async')
-  , should   = require('should')
-  , uuid     = require('node-uuid');
+const mongoose = require('./');
+const should = require('should');
+const uuid = require('node-uuid');
 
-describe('hasMany without options', function(){
-  var userSchema, User, user, widgetSchema, Widget, widget;
+describe('hasMany', function(){
+  let userSchema, User, user,
+      widgetSchema, Widget, widget;
 
   before(function(){
     widgetSchema = mongoose.Schema({ name: String });
@@ -19,32 +19,34 @@ describe('hasMany without options', function(){
     User = mongoose.model('User', userSchema);
   });
 
-  describe('schema', function(){
-    it('has a virtual to represent the relationship', function(){
-      should(userSchema.virtuals.widgets).not.equal(undefined);
-      should(userSchema.virtuals.widgets.path).equal('widgets');
-      should(userSchema.virtuals.wadgets).not.equal(undefined);
-      should(userSchema.virtuals.wadgets.path).equal('wadgets');
-      should((new User).wadgets.associationModelName).equal('Widget');
-    });
-  });
-
-  describe('instance', function(){
-    before(function(){
-      user = new User();
+  describe('setup', function () {
+    describe('schema', function(){
+      it('has a virtual to represent the relationship', function(){
+        should(userSchema.virtuals.widgets).not.equal(undefined);
+        should(userSchema.virtuals.widgets.path).equal('widgets');
+        should(userSchema.virtuals.wadgets).not.equal(undefined);
+        should(userSchema.virtuals.wadgets.path).equal('wadgets');
+        should((new User).wadgets.associationModelName).equal('Widget');
+      });
     });
 
-    it('returns a relationship', function(){
-      should(user.widgets.build).be.a.Function;
-      should(user.widgets.create).be.a.Function;
-      should(user.widgets.find).be.a.Function;
-      should(user.widgets.findOne).be.a.Function;
-      should(user.widgets.append).be.a.Function;
-      should(user.widgets.concat).be.a.Function;
-      should(user.widgets.remove).be.a.Function;
-      should(user.widgets.delete).be.a.Function;
+    describe('instance', function(){
+      before(function(){
+        user = new User();
+      });
+
+      it('returns a relationship', function(){
+        should(user.widgets.build).be.a.Function;
+        should(user.widgets.create).be.a.Function;
+        should(user.widgets.find).be.a.Function;
+        should(user.widgets.findOne).be.a.Function;
+        should(user.widgets.append).be.a.Function;
+        should(user.widgets.concat).be.a.Function;
+        should(user.widgets.remove).be.a.Function;
+        should(user.widgets.delete).be.a.Function;
+      });
     });
-  });
+  })
 
   describe('build', function(){
     before(function(){
@@ -52,17 +54,17 @@ describe('hasMany without options', function(){
     });
 
     it('instantiates one child document', function() {
-      built = user.widgets.build({ name: 'Beam' });
+      let widget = user.widgets.build({ name: 'Beam' });
 
-      should(built).be.an.instanceof(Widget);
-      should(built.user).eql(user._id);
-      should(built.name).equal('Beam')
+      should(widget).be.an.instanceof(Widget);
+      should(widget.user).eql(user._id);
+      should(widget.name).equal('Beam')
     });
 
-    it('instantiates many children documents', function() {
-      built = user.widgets.build([{}, {}]);
+    it.skip('instantiates many children documents', function() {
+      let widgets = user.widgets.build([{}, {}]);
 
-      built.forEach(function(widget){
+      widgets.forEach(function(widget){
         should(widget).be.an.instanceof(Widget);
         should(widget.user).eql(user._id);
       });
@@ -85,22 +87,31 @@ describe('hasMany without options', function(){
       });
     });
 
-    it('creates many child document', function(done) {
-      user.widgets.create([{}, {}], function(err, widgets) {
+    it('creates many child documents', function(done) {
+      user.widgets.create({}, {}, function(err, widget1, widget2) {
         should.strictEqual(err, null);
 
-        widgets.forEach(function(widget){
-          should(widget).be.an.instanceof(Widget);
-          should(widget.user).equal(user._id);
-        });
+        should(widget1).be.an.instanceof(Widget);
+        should(widget1.user).equal(user._id);
+
+        should(widget2).be.an.instanceof(Widget);
+        should(widget2.user).equal(user._id);
 
         done();
+      });
+    });
+
+    it('supports promises', function () {
+      return user.widgets.create({ name: 'Beam' }).then(function(widget) {
+        should(widget).be.an.instanceof(Widget);
+        should(widget.name).equal('Beam')
+        should(widget.user).equal(user._id);
       });
     });
   });
 
   describe('find', function(){
-    var find;
+    let find;
 
     before(function(){
       user = new User();
@@ -130,9 +141,67 @@ describe('hasMany without options', function(){
       should(find.options.limit).eql(3);
     });
 
+    describe('handling promises', function () {
+      before(function(){
+        return Widget.remove().then(function () {
+          return user.widgets.create({ }, { });
+        });
+      });
+
+      it('with conditions, fields, options', function() {
+        find = user.widgets.find({}, null, null)
+        should(find).be.instanceOf(mongoose.Query);
+
+        return find.exec().then(function(widgets){
+          should(widgets).have.lengthOf(2);
+          widgets.forEach(function(widget){
+            should(widget).be.an.instanceof(Widget);
+          });
+        });
+      });
+
+      it('with conditions, fields', function() {
+        find = user.widgets.find({}, null);
+        should(find).be.instanceOf(mongoose.Query);
+
+        return find.exec().then(function(widgets){
+          should(widgets).have.lengthOf(2);
+          widgets.forEach(function(widget){
+            should(widget).be.an.instanceof(Widget);
+          });
+        });
+      });
+
+      it('with conditions', function() {
+        find = user.widgets.find({});
+        should(find).be.instanceOf(mongoose.Query);
+
+        return find.exec().then(function(widgets){
+          should(widgets).have.lengthOf(2);
+          widgets.forEach(function(widget){
+            should(widget).be.an.instanceof(Widget);
+          });
+        });
+      });
+
+      it('no args', function() {
+        find = user.widgets.find();
+        should(find).be.instanceOf(mongoose.Query);
+
+        return find.exec().then(function(widgets){
+          should(widgets).have.lengthOf(2);
+          widgets.forEach(function(widget){
+            should(widget).be.an.instanceof(Widget);
+          });
+        });
+      });
+    });
+
     describe('handling callbacks', function(){
       before(function(done){
-        user.widgets.create([{ }, { }], done);
+        Widget.remove(function () {
+          user.widgets.create({ }, { }, done);
+        });
       });
 
       it('with conditions, fields, options, callback', function(done) {
@@ -183,19 +252,16 @@ describe('hasMany without options', function(){
         should(find).be.instanceOf(mongoose.Query);
       });
     });
-
   });
 
   describe('findOne', function(){
-    var find;
-
     before(function(done){
       user = new User();
-      user.widgets.create([{ }, { }], done);
+      user.widgets.create({ }, { }, done);
     });
 
     it('returns a findOne critera', function() {
-      find = user.widgets.findOne();
+      let find = user.widgets.findOne();
       should(find).be.instanceOf(mongoose.Query);
       should(find.op).equal('findOne');
       should(find.model.modelName).equal('Widget');
@@ -211,7 +277,7 @@ describe('hasMany without options', function(){
   });
 
   describe('concat', function(){
-    var other_widget;
+    let user, widget, otherWidget;
 
     before(function(){
       user = new User();
@@ -236,20 +302,18 @@ describe('hasMany without options', function(){
     });
 
     it('concatenates many children', function(done) {
-      user.widgets.concat([widget, otherWidget], function(err, concatenatedWidgets){
-        should(concatenatedWidgets).have.lengthOf(2);
-
-        should(widget._id).eql(concatenatedWidgets[0]._id);
+      user.widgets.concat(widget, otherWidget, function(err, concatenatedWidget1, concatenatedWidget2){
+        should(widget._id).eql(concatenatedWidget1._id);
         should(widget.user).eql(user._id);
         should(widget.isNew).be.false;
-        should(concatenatedWidgets[0].user).eql(user._id);
-        should(concatenatedWidgets[0].isNew).be.false;
+        should(concatenatedWidget1.user).eql(user._id);
+        should(concatenatedWidget1.isNew).be.false;
 
-        should(otherWidget._id).eql(concatenatedWidgets[1]._id);
+        should(otherWidget._id).eql(concatenatedWidget2._id);
         should(otherWidget.user).eql(user._id);
         should(otherWidget.isNew).be.false;
-        should(concatenatedWidgets[1].user).eql(user._id);
-        should(concatenatedWidgets[1].isNew).be.false;
+        should(concatenatedWidget2.user).eql(user._id);
+        should(concatenatedWidget2.isNew).be.false;
 
         done();
       });
@@ -267,7 +331,7 @@ describe('hasMany without options', function(){
   });
 
   describe('push', function(){
-    var otherWidget;
+    let otherWidget;
 
     before(function(){
       user = new User({});
@@ -278,14 +342,14 @@ describe('hasMany without options', function(){
     });
 
     it('adds relationship information to the child', function(){
-      var returnedWidget = user.widgets.push(widget);
+      let returnedWidget = user.widgets.push(widget);
       should(widget.user).eql(user._id);
       should(returnedWidget.user).eql(user._id);
       should(returnedWidget._id).eql(widget._id);
     });
 
     it('adds relationship information to many children', function(){
-      var returnedWidgets = user.widgets.push([ widget, otherWidget ]);
+      let returnedWidgets = user.widgets.push([ widget, otherWidget ]);
       should(widget.user).eql(user._id);
       should(otherWidget.user).eql(user._id);
 
@@ -337,29 +401,23 @@ describe('hasMany without options', function(){
 });
 
 describe('hasMany dependent', function(){
-  var postSchema, Post, post
+  let postSchema, Post, post
     , likeSchema, Like, like, likeEventCalled = false
     , favoriteSchema, Favorite, favorite, favoriteEventCalled = false
     , repostSchema, Repost, repost, repostEventCalled = false;
 
-  before(function(done){
+  before(function(){
     likeSchema = mongoose.Schema({});
     likeSchema.belongsTo('post');
-    likeSchema.pre('remove', function(next){ Like.emit('destroy-test-event', this); next(); });
     Like = mongoose.model('Like', likeSchema);
-    Like.once('destroy-test-event', function(){ likeEventCalled = true; });
 
     favoriteSchema = mongoose.Schema({});
     favoriteSchema.belongsTo('post');
-    favoriteSchema.pre('remove', function(next){ Favorite.emit('destroy-test-event', this); next(); });
     Favorite = mongoose.model('Favorite', favoriteSchema);
-    Favorite.once('destroy-test-event', function(){ favoriteEventCalled = true; });
 
     repostSchema = mongoose.Schema({});
     repostSchema.belongsTo('post');
-    repostSchema.pre('remove', function(next){ Repost.emit('destroy-test-event', this); next(); });
     Repost = mongoose.model('Repost', repostSchema);
-    Repost.once('destroy-test-event', function(){ repostEventCalled = true; });
 
     postSchema = new mongoose.Schema({});
     postSchema.hasMany('likes', { dependent: 'delete' });
@@ -367,16 +425,16 @@ describe('hasMany dependent', function(){
     postSchema.hasMany('reposts', { dependent: 'nullify' });
     Post = mongoose.model('Post', postSchema);
 
-    new Post().save(function(err, post){
-      async.parallel({
-        like: function(cb){ post.likes.create({}, cb); },
-        favorite: function(cb){ post.favorites.create({}, cb); },
-        repost: function(cb){ post.reposts.create({}, cb); },
-      }, function(err, output){
-        favorite = output.favorite;
-        like = output.like;
-        repost = output.repost;
-        post.remove(done);
+    return new Post({}).save().then(function(post){
+      return Promise.all([
+        post.likes.create({}),
+        post.favorites.create({}),
+        post.reposts.create({})
+      ]).then(function (values) {
+        like = values[0];
+        favorite = values[1];
+        repost = values[2];
+        return post.remove();
       });
     });
   });
@@ -388,22 +446,14 @@ describe('hasMany dependent', function(){
         done();
       });
     });
-
-    it('does not run child middlewares', function(){
-      should(likeEventCalled).be.false;
-    });
   });
 
   describe('destroy', function(){
     it('removes children', function(done){
-      Favorite.findById(favorite._id, function(err, favorite){
-        should.strictEqual(favorite, null);
+      Favorite.findById(favorite._id, function(err, doc){
+        should.strictEqual(doc, null);
         done();
       });
-    });
-
-    it('runs child middlewares', function(){
-      should(favoriteEventCalled).be.true;
     });
   });
 
@@ -419,7 +469,7 @@ describe('hasMany dependent', function(){
 });
 
 describe('hasMany polymorphic:true', function() {
-  var tourSchema, Tour, tour, venueSchema, Venue, venue;
+  let tourSchema, Tour, tour, venueSchema, Venue, venue;
 
   before(function(){
     venueSchema = mongoose.Schema({ });
@@ -472,7 +522,7 @@ describe('hasMany polymorphic:true', function() {
 
   describe('#find', function() {
     it('builds a ploymorphic query', function() {
-      var find = tour.venues.find();
+      let find = tour.venues.find();
       should(find).be.an.instanceof(mongoose.Query);
       should(find._conditions.playable).eql(tour._id);
       should(find._conditions.playable_type).eql('Tour');
@@ -481,7 +531,8 @@ describe('hasMany polymorphic:true', function() {
 });
 
 describe('hasMany inverse_of', function() {
-  var Reader, reader, Book;
+  let readerSchema, Reader, reader,
+      bookSchema, Book, book;
 
   before(function(){
     readerSchema = mongoose.Schema({ });
@@ -508,14 +559,14 @@ describe('hasMany inverse_of', function() {
 });
 
 describe('hasMany discriminated', function() {
-  var departmentSchema, Department, department
+  let departmentSchema, Department, department
     , BaseSchema
     , Product, product
     , DairyProduct, dairy
     , ProduceProduct, produce;
 
   before(function(){
-    var util = require('util');
+    let util = require('util');
     function BaseSchema() {
       mongoose.Schema.apply(this, arguments);
       this.belongsTo('department');
@@ -551,25 +602,24 @@ describe('hasMany discriminated', function() {
     });
 
     it('concats a hertogenious set of child documents', function(done) {
-      var product = new Product()
+      let product = new Product()
         , dairy = new DairyProduct()
         , produce = new ProduceProduct();
 
-      department.products.concat([product, dairy, produce], function(err, concatenatedProducts){
+      department.products.concat(product, dairy, produce, function(err, concatenatedProduct1, concatenatedProduct2, concatenatedProduct3){
         should.strictEqual(err, null);
-        concatenatedProducts.forEach(function(concatenatedProduct){
-          should(concatenatedProduct).be.an.instanceof(Product);
-          should(concatenatedProduct.department).be.eql(department._id);
-          if(concatenatedProduct._id == product._id){
-            should(concatenatedProduct.__t).eql.undefined;
-          }
-          else if(concatenatedProduct._id == dairy._id){
-            should(concatenatedProduct.__t).eql('DairyProduct');
-          }
-          else if(concatenatedProduct._id == produce._id){
-            should(concatenatedProduct.__t).eql('ProduceProduct');
-          }
-        });
+
+        should(concatenatedProduct1).be.an.instanceof(Product);
+        should(concatenatedProduct1.department).be.eql(department._id);
+        should(concatenatedProduct1.__t).eql.undefined;
+
+        should(concatenatedProduct2).be.an.instanceof(Product);
+        should(concatenatedProduct2.department).be.eql(department._id);
+        should(concatenatedProduct2.__t).eql('DairyProduct');
+
+        should(concatenatedProduct3).be.an.instanceof(Product);
+        should(concatenatedProduct3.department).be.eql(department._id);
+        should(concatenatedProduct3.__t).eql('ProduceProduct');
 
         department.products.find(function(err, products){
           should(products).have.lengthOf(3);
@@ -592,7 +642,7 @@ describe('hasMany discriminated', function() {
 });
 
 describe('#__touch', function(){
-  var postSchema, Post, post;
+  let postSchema, Post, post;
 
   before(function(){
     postSchema = mongoose.Schema({ body: String });
@@ -607,7 +657,7 @@ describe('#__touch', function(){
   it('saves the document when called', function(done){
     post = new Post;
     post.save(function (err) {
-      var version = post.__v;
+      let version = post.__v;
       post.__touch(function(err){
         should(post.__v).not.eql(version);
         done();
